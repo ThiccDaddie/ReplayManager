@@ -1,0 +1,23 @@
+﻿@using ThiccDaddie.ReplayManager.Shared
+@namespace ThiccDaddie.ReplayManager.Client.Components
+
+<MatListItem Class="replay-list-item">
+	<div>
+		<span>@Replay.PlayerName</span>
+	</div>
+	<div>
+		<span>@Replay.DateTime</span>
+	</div>
+	<div>
+		<span>@Replay.MapDisplayName</span>
+	</div>
+	<div>
+		<span>@Replay.PlayerVehicle</span>
+	</div>
+	<div>
+		<span>@Replay.ClientVersionFromExe</span>
+	</div>
+</MatListItem>
+
+@code { [Parameter]
+	public ReplayInfo Replay { get; set; } }

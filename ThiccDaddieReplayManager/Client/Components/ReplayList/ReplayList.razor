@@ -1,0 +1,18 @@
+﻿@using ThiccDaddie.ReplayManager.Shared
+
+@namespace ThiccDaddie.ReplayManager.Client.Components
+
+<mat Class=@("replay-list")>
+	@foreach ((ReplayInfo replay, int index) in Replays.Select((value, index) => (value, index)))
+	{
+		if (index != 0 && index < Replays.Count)
+		{
+<MatListDivider></MatListDivider> }
+<ReplayListItem Replay="@replay" />}
+</mat>
+
+@code { [Parameter]
+	public List<ReplayInfo> Replays { get; set; }
+
+	[Parameter]
+	public string Class { get; set; } }

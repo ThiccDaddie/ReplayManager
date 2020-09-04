@@ -1,0 +1,27 @@
+﻿.replay-list-item {
+  display: flex;
+  justify-content: space-between; }
+
+.replay-list {
+  padding: 10px;
+  max-width: 1200px; }
+
+.main {
+  display: flex;
+  justify-content: center; }
+
+.nav-menu {
+  height: 60px;
+  padding: 0 10px 0 10px;
+  background-color: cyan;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; }
+  .nav-menu .section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; }
+
+* {
+  margin: 0;
+  padding: 0; }
