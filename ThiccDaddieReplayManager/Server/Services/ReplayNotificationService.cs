@@ -19,9 +19,25 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 		{
 			await _replayInfoHubContext.Clients.All.SendAsync("ReceiveLatest", replays);
 		}
+
 		public async Task NotifyClientOfLatestReplays(string connectionId, List<ReplayInfo> replays)
 		{
 			await _replayInfoHubContext.Clients.Client(connectionId).SendAsync("ReceiveLatest", replays);
+		}
+
+		public async Task NotifyClientsOfAllReplays(List<ReplayInfo> replays)
+		{
+			await _replayInfoHubContext.Clients.All.SendAsync("ReceiveAll", replays);
+		}
+
+		public async Task NotifyClientOfAllReplays(string connectionId, List<ReplayInfo> replays)
+		{
+			await _replayInfoHubContext.Clients.Client(connectionId).SendAsync("ReceiveAll", replays);
+		}
+
+		public async Task NotifyClientOfPercentageReplaysLoaded(int currentReplaysLoadedCount, int totalReplayCount)
+		{
+			await _replayInfoHubContext.Clients.All.SendAsync("ReceivePercentageReplaysLoaded", currentReplaysLoadedCount, totalReplayCount);
 		}
 	}
 }

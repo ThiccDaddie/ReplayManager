@@ -1,12 +1,17 @@
 ﻿@namespace ThiccDaddie.ReplayManager.Client.Shared
 
-<div class="nav-menu">
-	<div class="section">
-		<MatHeadline6>Thicc Daddie's Replay Manager</MatHeadline6>
-	</div>
-	<div class="section">
-		<MatIconButton Link="/" Icon="home"></MatIconButton>
-		<MatIconButton Link="/favorites" Icon="star"></MatIconButton>
-		<MatIconButton Link="/settings" Icon="settings"></MatIconButton>
-	</div>
-</div>
+<MatNavMenu Multi="true" Class="app-sidebar" Style="flex-grow:1;">
+	<MatNavItem Href="/" NavLinkMatch="NavLinkMatch.All">
+		<MatIcon>home</MatIcon><span> &nbsp; Home</span>
+	</MatNavItem>
+
+	<MatNavItem Href="/favorites">
+		<MatIcon>star</MatIcon><span> &nbsp; Favorites</span>
+	</MatNavItem>
+
+	<MatNavItem Href="/settings">
+		<MatIcon>settings</MatIcon><span> &nbsp; Settings</span>
+	</MatNavItem>
+</MatNavMenu>
+
+@code {}

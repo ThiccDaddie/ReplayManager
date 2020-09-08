@@ -1,0 +1,100 @@
+﻿@using ThiccDaddie.ReplayManager.Shared
+@using System.Linq
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
+@using ThiccDaddie.ReplayManager.Client.Services
+
+@inject IJSRuntime JSRuntime
+@inject ReplaySortService ReplaySortService
+@namespace ThiccDaddie.ReplayManager.Client.Components
+
+<div class="replay-table" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; white-space: nowrap">
+	<MatTable Items="@PagedReplays" UseSortHeaderRow="true" SortBy="@nameof(hack.DateTime)" ShowPaging="@false" PageSize="@PageSize" Striped="@true" FilterByColumnName="@nameof(hack.MapDisplayName)" Class="mat-elevation-z5" Style="flex-grow: 1; width: 100%; box-sizing: border-box;">
+		<MatTableHeader>
+			<MatSortHeaderRow SortChanged="@OnSortChanged">
+				<MatSortHeader SortId="@nameof(hack.MapDisplayName)">Map</MatSortHeader>
+				<MatSortHeader Style="min-width: 175px;" SortId="@nameof(hack.DateTime)">Time</MatSortHeader>
+				<MatSortHeader SortId="@nameof(hack.PlayerName)">Player Name</MatSortHeader>
+				<MatSortHeader SortId="@nameof(hack.PlayerVehicle)">Player Vehicle</MatSortHeader>
+				<MatSortHeader Style="min-width: 100px;" SortId="@nameof(hack.RegionCode)">Region</MatSortHeader>
+				<MatSortHeader SortId="@nameof(hack.ClientVersionFromExe)">Version</MatSortHeader>
+			</MatSortHeaderRow>
+		</MatTableHeader>
+		<MatTableRow>
+			<td>@context.MapDisplayName</td>
+			<td>@context.DateTime.ToString()</td>
+			<td>@context.PlayerName</td>
+			<td>@context.PlayerVehicle</td>
+			<td>@context.RegionCode</td>
+			<td>@context.ClientVersionFromExe</td>
+		</MatTableRow>
+	</MatTable>
+
+	<MatPaginator PageSizeOptions="@PageSizeOptions" PageSize="@PageSize" Length="@Length" Page="@((data) => MySubject.OnNext(data))" PageLabel="@PageLabel">
+
+	</MatPaginator>
+</div>
+
+@code { [Parameter]
+	public List<ReplayInfo> Replays { get; set; }
+	public List<ReplayInfo> PagedReplays { get; set; } = new List<ReplayInfo>();
+	ReplayInfo hack = new ReplayInfo();
+	IReadOnlyList<MatPageSizeOption> PageSizeOptions { get; set; } = new List<MatPageSizeOption>()
+{
+		new MatPageSizeOption(int.MaxValue, "fit"),
+		new MatPageSizeOption(5),
+		new MatPageSizeOption(10),
+		new MatPageSizeOption(25),
+		new MatPageSizeOption(100)
+		};
+
+	int PageSize { get; set; }
+	int PageIndex { get; set; }
+	int Length { get; set; }
+	string PageLabel { get; set; }
+
+	Subject<MatPaginatorPageEvent> MySubject { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Task.Delay(10000);
+
+		MySubject = new Subject<MatPaginatorPageEvent>();
+		MySubject.Throttle(TimeSpan.FromMilliseconds(100))
+					  .Subscribe(events => OnPage(events));
+
+		ReplaySortService.SetReplays(Replays);
+
+		int tableHeight = await JSRuntime.InvokeAsync<int>("getElementHeight", ".replay-table table");
+		int tableHeaderHeight = await JSRuntime.InvokeAsync<int>("getElementHeight", ".replay-table table thead");
+		int tableBodyHeight = tableHeight - tableHeaderHeight;
+
+		// 48px is the table row height
+		PageSize = (int)Math.Floor(tableBodyHeight / 48d);
+		var initialPageSizeOptions = PageSizeOptions.ElementAtOrDefault(0);
+		initialPageSizeOptions.Value = PageSize;
+		PageLabel = initialPageSizeOptions.Text;
+		Length = Replays.Count;
+		ApplyPaging();
+	}
+
+	void OnPage(MatPaginatorPageEvent e)
+	{
+		PageIndex = e.PageIndex;
+		PageSize = e.PageSize;
+		PageLabel = PageSizeOptions.FirstOrDefault(options => options.Value == e.PageSize).Text;
+		ApplyPaging();
+		StateHasChanged();
+	}
+
+	void ApplyPaging()
+	{
+		PagedReplays = ReplaySortService.OrderedReplayInfos.Skip(PageSize * PageIndex).Take(PageSize).ToList();
+	}
+
+	void OnSortChanged(MatSortChangedEvent sort)
+	{
+		ReplaySortService.SortReplays(sort.SortId, sort.Direction);
+		ApplyPaging();
+		StateHasChanged();
+	}}

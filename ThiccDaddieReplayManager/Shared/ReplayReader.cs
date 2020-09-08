@@ -13,18 +13,11 @@ namespace ThiccDaddie.ReplayManager.Shared
 	{
 		public static async Task<ReplayInfo> GetReplayInfoFromFile(string path, CancellationToken cancellationToken)
 		{
-			try
+			(string replayInfoJson, string replayDetailsJson) = await ReadReplayFile(path, cancellationToken);
+			return JsonConvert.DeserializeObject<ReplayInfo>(replayInfoJson, new JsonSerializerSettings
 			{
-				(string replayInfoJson, string replayDetailsJson) = await ReadReplayFile(path, cancellationToken);
-				return JsonConvert.DeserializeObject<ReplayInfo>(replayInfoJson, new JsonSerializerSettings
-				{
-					DateFormatString = "dd.MM.yyyy HH:mm:ss"
-				});
-			}
-			catch
-			{
-				return null;
-			}
+				DateFormatString = "dd.MM.yyyy HH:mm:ss"
+			});
 		}
 		private static async Task<(string, string)> ReadReplayFile(string path, CancellationToken cancellationToken)
 		{

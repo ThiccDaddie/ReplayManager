@@ -1,10 +1,13 @@
-﻿.replay-list-item {
-  display: flex;
-  justify-content: space-between; }
+﻿/*@import 'Components/RecentReplays/RecentReplays.scss';*/
+.replay-table th {
+  position: sticky;
+  top: 0; }
 
+/*@import 'Components/ReplayTableItem/ReplayTableItem.scss';*/
 .replay-list {
-  padding: 10px;
-  max-width: 1200px; }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; }
 
 .main {
   display: flex;

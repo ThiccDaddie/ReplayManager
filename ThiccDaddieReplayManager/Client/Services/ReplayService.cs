@@ -12,17 +12,32 @@ namespace ThiccDaddie.ReplayManager.Client.Services
 	public class ReplayService : INotifyPropertyChanged
 	{
 		private readonly HubConnection _hubConnection;
+		private List<ReplayInfo> allReplayInfos;
+		private (int, int) replaysLoaded;
 
-		private List<ReplayInfo> recentReplayInfos;
-		public List<ReplayInfo> RecentReplayInfos
+		public List<ReplayInfo> AllReplayInfos
 		{
 			get
 			{
-				return recentReplayInfos;
+				return allReplayInfos;
 			}
-			set
+			private set
 			{
-				recentReplayInfos = value;
+				allReplayInfos = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public (int, int) ReplaysLoaded
+		{
+			get
+			{
+				return replaysLoaded;
+			}
+
+			private set
+			{
+				replaysLoaded = value;
 				OnPropertyChanged();
 			}
 		}
@@ -36,22 +51,25 @@ namespace ThiccDaddie.ReplayManager.Client.Services
 			.Build();
 
 			InitializeHub();
-			_hubConnection.StartAsync();
 			Task.Run(() => RequestLatestReplayInfos());
 		}
 
 		public void InitializeHub()
 		{
-			_hubConnection.On<List<ReplayInfo>>("ReceiveLatest", (replays) =>
+			_hubConnection.On<int, int>("ReceivePercentageReplaysLoaded", (current, total) =>
 			{
-				RecentReplayInfos = replays;
+				ReplaysLoaded = (current, total);
+			});
+			_hubConnection.On<List<ReplayInfo>>("ReceiveAll", (replays) =>
+			{
+				AllReplayInfos = replays;
 			});
 		}
 
 		public async Task RequestLatestReplayInfos()
 		{
 			await _hubConnection.StartAsync();
-			await _hubConnection.SendAsync("RequestLatestReplayInfos");
+			await _hubConnection.SendAsync("RequestAllReplayInfos");
 		}
 
 		protected void OnPropertyChanged([CallerMemberName] string name = null)
