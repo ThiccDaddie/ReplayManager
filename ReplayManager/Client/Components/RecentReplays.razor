@@ -12,10 +12,10 @@
 
 @if (recentReplayInfos != null)
 {
-<ReplayList Replays="@recentReplayInfos"></ReplayList>}
+	<ReplayList Replays="@recentReplayInfos"></ReplayList>}
 else if (!string.IsNullOrEmpty(errorMessage))
 {
-<MatHeadline6>@errorMessage</MatHeadline6>}
+	<MatHeadline6>@errorMessage</MatHeadline6>}
 
 @code { private string errorMessage;
 	private List<ReplayInfo> recentReplayInfos = new List<ReplayInfo>();
