@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<RootNamespace>ThiccDaddie.ReplayManager.Server</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -17,8 +18,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Client\ThiccDaddie.ReplayManager.Client.csproj" />
-		<ProjectReference Include="..\Shared\ThiccDaddie.ReplayManager.Shared.csproj" />
+		<ProjectReference Include="..\Client\ReplayManager.Client.csproj" />
+		<ProjectReference Include="..\Shared\ReplayManager.Shared.csproj" />
 	</ItemGroup>
 
 
