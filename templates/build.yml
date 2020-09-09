@@ -7,7 +7,7 @@ steps:
   displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
   inputs:
     command: 'publish'
-    projects: '**/*.csproj'
+    projects: '**/ReplayManager.csproj'
     publishWebProjects: false
     arguments: '--no-restore -r ${{ parameters.rid }} --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}/${{ parameters.rid }}'
     zipAfterPublish: true
