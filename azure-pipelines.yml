@@ -7,10 +7,11 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+    - master
   tags:
     include:
     - v0.*
+    - test
 
 pool:
   vmImage: 'windows-latest'
