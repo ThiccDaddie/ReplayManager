@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<?if $(var.Platform)=x64?>
+	<?define ProductCode = "{6459D0F6-E985-4CE0-97D2-883BB6A1DA40}"?>
+	<?else?>
+	<?define ProductCode = "{37609AF7-065D-4E6C-9AC7-62AB2FB219C6}"?>
+	<?endif?>
+
+	<?define UpgradeCode = "{06BECE0B-835C-4E74-912E-910940A05CC1}"?>
+
+	<?define BuildVersion = 1.2.3.4 ?>
+
+	<Product Id="$(var.ProductCode)"
+					 Name="!(loc.ProductName_$(var.Platform))"
+					 Language="!(loc.Language)"
+					 Version="$(var.BuildVersion)"
+					 Manufacturer="!(loc.Company)"
+					 UpgradeCode="$(var.UpgradeCode)">
+
+		<Package InstallerVersion="200"
+						 Compressed="yes"
+						 InstallScope="perMachine"
+						 Platform="$(var.Platform)"
+						 Manufacturer="!(loc.Company)"
+						 Description="$(loc.Description)"
+						 Keywords="!(loc.Keywords)"
+						 Languages="!(loc.Language)"
+						 />
+
+		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" />
+		<MediaTemplate
+			EmbedCab="yes"
+			/>
+
+		<Icon Id="icon.ico" SourceFile="$(var.ReplayManager.Client.ProjectDir)\Josh_Stream.ico" />
+
+		<Property Id="APPPRODUCTICON">icon.ico</Property>
+		<Property Id="APPURLINFOABOUT">https://github.com/ThiccDaddie/ReplayManager</Property>
+
+		<UIRef Id="WixUI_Minimal"/>
+
+		<!--Do this-->
+		<!--<WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\assets\background.bmp" />
+		<WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\assets\banner.bmp" />
+		
+		 Background: 493x312 Banner: 493x58 format BMP-->
+
+		<Feature Id="ProductFeature" Title="ReplayManager.Installer" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+</Wix>

@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Shared\ThiccDaddie.ReplayManager.Shared.csproj" />
+		<ProjectReference Include="..\Shared\ReplayManager.Shared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
