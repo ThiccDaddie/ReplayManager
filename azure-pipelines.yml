@@ -6,38 +6,31 @@
 trigger:
 - master
 
-stages:
-- stage: 'Build'
-  displayName: 'Build the App'
-  jobs:
-  - job: 'Build'
-    displayName: 'Build Job'
-    
-    pool:
-      vmImage: 'windows-latest'
+pool:
+  vmImage: 'windows-latest'
 
-    variables:
-      buildConfiguration: 'Release'
-      rid: 
+variables:
+  buildConfiguration: 'Release'
+  rid: 
 
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core SDK 3.x'
-      inputs:
-        packageType: 'sdk'
-        version: '3.x'
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore project dependencies'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - $(buildConfiguration)'
-      inputs:
-        command: 'publish'
-        projects: '**/ReplayManager.Server.csproj'
-        publishWebProjects: false
-        arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
-        zipAfterPublish: true
-    - publish: '$(Build.ArtifactStagingDirectory)'
-      artifact: drop
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 3.x'
+  inputs:
+    packageType: 'sdk'
+    version: '3.x'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+- task: DotNetCoreCLI@2
+  displayName: 'Publish the project - $(buildConfiguration)'
+  inputs:
+    command: 'publish'
+    projects: '**/ReplayManager.Server.csproj'
+    publishWebProjects: false
+    arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
+    zipAfterPublish: true
+- publish: '$(Build.ArtifactStagingDirectory)'
+  artifact: drop
