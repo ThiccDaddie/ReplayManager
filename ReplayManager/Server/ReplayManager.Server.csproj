@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<RootNamespace>ThiccDaddie.ReplayManager.Server</RootNamespace>
+		<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<ItemGroup>
