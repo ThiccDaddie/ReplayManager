@@ -10,8 +10,7 @@ trigger:
     - master
   tags:
     include:
-    - v0.*
-    - test
+    - release-v*
 
 pool:
   vmImage: 'windows-latest'
