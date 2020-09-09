@@ -40,7 +40,7 @@ steps:
     zipAfterPublish: true
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: $(System.DefaultWorkingDirectory)/bin
+    targetPath: $(Pipeline.Workspace)
     artifactName: ReplayManager
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'
@@ -52,6 +52,6 @@ steps:
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
     releaseNotesSource: 'inline'
-    assets: '$(System.DefaultWorkingDirectory)/bin/**/*.zip'
+    assets: '$(Pipeline.Workspace)/**/*.zip'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
