@@ -52,6 +52,6 @@ steps:
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
     releaseNotesSource: 'inline'
-    assets: '$(Pipeline.Workspace)/**/*.zip'
+    assets: '$(Pipeline.Workspace)/ReplayManager/**/*.zip'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
