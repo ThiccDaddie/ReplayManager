@@ -41,3 +41,17 @@ steps:
     zipAfterPublish: true
 - publish: '$(Build.ArtifactStagingDirectory)'
   artifact: drop
+- task: GitHubRelease@1
+  displayName: 'Create GitHub Release'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
+  inputs:
+    gitHubConnection: 'github.com_ThiccDaddie'
+    repositoryName: 'ThiccDaddie/ReplayManager'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'gitTag'
+    tagPattern: 'release-v*'
+    releaseNotesSource: 'inline'
+    assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
