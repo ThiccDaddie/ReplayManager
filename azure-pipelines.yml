@@ -6,28 +6,38 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
+stages:
+- stage: 'Build'
+  displayName: 'Build the App'
+  jobs:
+  - job: 'Build'
+    displayName: 'Build Job'
+    
+    pool:
+      vmImage: 'windows-latest'
 
-variables:
-  buildConfiguration: 'Release'
+    variables:
+      buildConfiguration: 'Release'
+      rid: 
 
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.x'
-  inputs:
-    packageType: 'sdk'
-    version: '3.x'
-- task: DotNetCoreCLI@2
-  displayName: 'Restore project dependencies'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-- template: templates/build.yml
-  parameters:
-    buildConfiguration: 'Debug'
-- template: templates/build.yml
-  parameters:
-    buildConfiguration: 'Release'
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core SDK 3.x'
+      inputs:
+        packageType: 'sdk'
+        version: '3.x'
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore project dependencies'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish the project - $(buildConfiguration)'
+      inputs:
+        command: 'publish'
+        projects: '**/ReplayManager.Server.csproj'
+        publishWebProjects: false
+        arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
+        zipAfterPublish: true
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: drop
