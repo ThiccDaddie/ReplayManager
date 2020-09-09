@@ -1,6 +1,6 @@
 parameters:
   buildConfiguration: 'Release'
-  rid: 'win-x64
+  rid: 'win-x64'
 
 steps:
 - task: DotNetCoreCLI@2
