@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using ThiccDaddie.ReplayManager.Server.DataAccess;
@@ -11,13 +14,12 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 {
 	public class ReplayService
 	{
-		public Task ExecutingTask { get; set; }
-
-		public CancellationTokenSource CancellationTokenSource { get; set; }
-
 		private readonly OptionsService _optionsService;
 
 		private readonly ReplayNotificationService _replayNotificationService;
+		private Task ExecutingTask { get; set; }
+		private CancellationTokenSource CancellationTokenSource { get; set; }
+		private int TotalReplaysCount { get; set; }
 
 		public ReplayService(OptionsService optionsService, ReplayNotificationService replayNotificationService)
 		{
@@ -30,7 +32,7 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 			if (_optionsService.IsInitialised)
 			{
 				using var dbContext = new ReplayInfoContext();
-				List<ReplayInfo> latestReplayInfos = dbContext.ReplayInfos.OrderByDescending(replayInfo => replayInfo.DateTime)/*.Take(10)*/.ToList();
+				List<ReplayInfo> latestReplayInfos = dbContext.ReplayInfos.OrderByDescending(replayInfo => replayInfo.DateTime).Take(10).ToList();
 				await _replayNotificationService.NotifyClientsOfLatestReplays(latestReplayInfos);
 			}
 		}
@@ -38,8 +40,30 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 		public async Task NotifyClientOfLatestReplayInfos(string connectionId)
 		{
 			using var dbContext = new ReplayInfoContext();
-			List<ReplayInfo> latestReplayInfos = dbContext.ReplayInfos.OrderByDescending(replayInfo => replayInfo.DateTime)/*.Take(10)*/.ToList();
+			List<ReplayInfo> latestReplayInfos = dbContext.ReplayInfos.OrderByDescending(replayInfo => replayInfo.DateTime).Take(10).ToList();
 			await _replayNotificationService.NotifyClientOfLatestReplays(connectionId, latestReplayInfos);
+		}
+
+		public async Task NotifyClientsOfAllReplayInfos()
+		{
+			if (_optionsService.IsInitialised)
+			{
+				using var dbContext = new ReplayInfoContext();
+				List<ReplayInfo> allReplayInfos = dbContext.ReplayInfos.ToList();
+				await _replayNotificationService.NotifyClientsOfAllReplays(allReplayInfos);
+			}
+		}
+
+		public async Task NotifyClientOfAllReplayInfos(string connectionId)
+		{
+			using var dbContext = new ReplayInfoContext();
+			List<ReplayInfo> allReplayInfos = dbContext.ReplayInfos.ToList();
+			await _replayNotificationService.NotifyClientOfAllReplays(connectionId, allReplayInfos);
+		}
+
+		public async Task NotifyClientsOfPercentageReplaysLoaded(int currentReplaysLoadedCount)
+		{
+			await _replayNotificationService.NotifyClientOfPercentageReplaysLoaded(currentReplaysLoadedCount, TotalReplaysCount);
 		}
 
 		public void Startup()
@@ -60,6 +84,8 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 
 			var replayDirectory = _optionsService.PrimaryReplaysDirectory;
 
+			TotalReplaysCount = WotReplay.GetReplayFileCount(_optionsService.ReplayManagerOptions.PrimaryReplaysDirectory);
+
 			if (_optionsService.IsInitialised)
 			{
 				ExecutingTask = LoadAddedReplays(replayDirectory, cancellationToken);
@@ -73,6 +99,7 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 				if (task.IsCompletedSuccessfully)
 				{
 					await NotifyClientsOfLatestReplayInfos();
+					await NotifyClientsOfAllReplayInfos();
 				}
 			});
 		}
@@ -103,16 +130,37 @@ namespace ThiccDaddie.ReplayManager.Server.Services
 
 		private async Task LoadAndPersistReplays(string replayDirectory, IEnumerable<string> fileNames, ReplayInfoContext dbContext, CancellationToken cancellationToken)
 		{
+			Subject<int> MySubject = new Subject<int>();
+			MySubject.Sample(TimeSpan.FromMilliseconds(500))
+						  .Subscribe(async events => await NotifyClientsOfPercentageReplaysLoaded(events));
 			ConcurrentBag<ReplayInfo> replayInfos = new ConcurrentBag<ReplayInfo>();
 			await Dasync.Collections.ParallelForEachExtensions.ParallelForEachAsync(fileNames, async fileName =>
 			{
-				ReplayInfo replay = await WotReplay.DecodeReplay(replayDirectory + fileName, cancellationToken);
-				if (replay != null)
+				try
 				{
-					replay.ReplayInfoId = fileName;
-					replayInfos.Add(replay);
+					ReplayInfo replay = await WotReplay.DecodeReplay(replayDirectory + fileName, cancellationToken);
+					if (replay != null)
+					{
+						replay.ReplayInfoId = fileName;
+						replayInfos.Add(replay);
+					}
+					else
+					{
+						TotalReplaysCount--;
+					}
+					MySubject.OnNext(replayInfos.Count);
 				}
-			}, maxDegreeOfParallelism: 4);
+				catch (OperationCanceledException)
+				{
+					throw;
+				}
+				catch
+				{
+					return;
+				}
+			}, maxDegreeOfParallelism: 4, cancellationToken: cancellationToken);
+			MySubject.OnCompleted();
+
 			await dbContext.BulkInsertAsync(replayInfos);
 			await dbContext.SaveChangesAsync(cancellationToken);
 		}

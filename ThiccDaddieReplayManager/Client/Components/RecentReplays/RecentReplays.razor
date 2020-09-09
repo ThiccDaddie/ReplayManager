@@ -1,0 +1,45 @@
+﻿@using ThiccDaddie.ReplayManager.Shared
+@using ThiccDaddie.ReplayManager.Client.Services;
+@using System.ComponentModel;
+
+@inject ReplayService ReplayService
+@inject HttpClient Http
+
+@namespace ThiccDaddie.ReplayManager.Client.Components
+
+@implements IDisposable
+
+@if (allReplayInfos != null)
+{@*<ReplayTable Replays="@allReplayInfos"></ReplayTable>*@
+				<ReplayList Replays="@allReplayInfos"></ReplayList>}
+			else if (!string.IsNullOrEmpty(errorMessage))
+			{
+<MatHeadline6>@errorMessage</MatHeadline6>}
+
+@code { private string errorMessage;
+	private List<ReplayInfo> allReplayInfos;
+
+	protected override void OnInitialized()
+	{
+		allReplayInfos = ReplayService.AllReplayInfos;
+		ReplayService.PropertyChanged += HandleReplayServicePropertyChanged;
+	}
+
+	void SetAllReplayInfos(List<ReplayInfo> replays)
+	{
+		allReplayInfos = replays;
+	}
+
+	public void HandleReplayServicePropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(ReplayService.AllReplayInfos))
+		{
+			SetAllReplayInfos(ReplayService.AllReplayInfos);
+			StateHasChanged();
+		}
+	}
+
+	public void Dispose()
+	{
+		ReplayService.PropertyChanged -= HandleReplayServicePropertyChanged;
+	} }

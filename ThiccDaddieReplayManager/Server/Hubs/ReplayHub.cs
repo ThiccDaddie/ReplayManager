@@ -16,5 +16,10 @@ namespace ThiccDaddie.ReplayManager.Server.Hubs
 		{
 			await _replayService.NotifyClientOfLatestReplayInfos(Context.ConnectionId);
 		}
+
+		public async Task RequestAllReplayInfos()
+		{
+			await _replayService.NotifyClientOfAllReplayInfos(Context.ConnectionId);
+		}
 	}
 }

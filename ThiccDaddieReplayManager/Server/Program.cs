@@ -12,10 +12,6 @@ namespace ThiccDaddie.ReplayManager.Server
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-				//.ConfigureServices((hostContext, services) =>
-				//{
-				//	services.AddHostedService<ReplayBackgroundService>();
-				//})
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
 					webBuilder.UseStartup<Startup>();

@@ -8,6 +8,20 @@
 	<link href="css/app.min.css" rel="stylesheet" />
 	<script src="_content/MatBlazor/dist/matBlazor.js"></script>
 	<link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
+	<script>
+		window.convertArray = (win1251Array) => {
+			var win1251decoder = new TextDecoder('windows-1251');
+			var bytes = new Uint8Array(win1251Array);
+			var decodedArray = win1251decoder.decode(bytes);
+			console.log(decodedArray);
+			return decodedArray;
+		};
+
+		window.getElementHeight = (elementSelector) => {
+			var element = document.querySelector(elementSelector);
+			return element.clientHeight;
+		}
+	</script>
 </head>
 
 <body>
