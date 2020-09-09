@@ -38,8 +38,10 @@ steps:
     publishWebProjects: false
     arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
     zipAfterPublish: true
-- publish: '$(Build.ArtifactStagingDirectory)'
-  artifact: drop
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)/bin
+    artifactName: ReplayManager
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
@@ -50,6 +52,6 @@ steps:
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
     releaseNotesSource: 'inline'
-    assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+    assets: '$(System.DefaultWorkingDirectory)/bin/**/*.zip'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
