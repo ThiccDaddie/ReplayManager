@@ -18,52 +18,61 @@ pool:
 variables:
   buildConfiguration: 'Release'  
 
-strategy:
-  matrix: 
-    x86:
-      rid: 'win-x86'
-    x64: 
-      rid: 'win-x64'
-  maxParallel: 2
-    
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.x'
-  inputs:
-    packageType: 'sdk'
-    version: '3.x'
-- task: DotNetCoreCLI@2
-  displayName: 'Restore project dependencies'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-- task: DotNetCoreCLI@2
-  displayName: 'Publish the project - $(buildConfiguration)'
-  inputs:
-    command: 'publish'
-    projects: '**/ReplayManager.Server.csproj'
-    publishWebProjects: false
-    arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
-    zipAfterPublish: true
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
-    artifactName: ReplayManager-$(rid)
+jobs: 
+- job: build_and_publish
+  strategy:
+    matrix: 
+      x86:
+        rid: 'win-x86'
+      x64: 
+        rid: 'win-x64'
+    maxParallel: 2
 
-- task: DownloadPipelineArtifact@2
-  inputs:
-    artifact: ReplayManager-$(rid)
-- task: GitHubRelease@1
-  displayName: 'Create GitHub Release'
-  # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
-  inputs:
-    gitHubConnection: 'github.com_ThiccDaddie'
-    repositoryName: 'ThiccDaddie/ReplayManager'
-    action: 'create'
-    target: '$(Build.SourceVersion)'
-    tagSource: 'userSpecifiedTag'
-    tag: '$(Build.BuildNumber)'
-    releaseNotesSource: 'inline'
-    assets: '$(Pipeline.Workspace)\**\*.zip'
-    changeLogCompareToRelease: 'lastFullRelease'
-    changeLogType: 'commitBased'
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.x'
+    inputs:
+      packageType: 'sdk'
+      version: '3.x'
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore project dependencies'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish the project - $(buildConfiguration)'
+    inputs:
+      command: 'publish'
+      projects: '**/ReplayManager.Server.csproj'
+      publishWebProjects: false
+      arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
+      zipAfterPublish: true
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
+      artifactName: ReplayManager-$(rid)
+#- job: package
+#  steps:
+#  - task: 
+- job: release
+  steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: ReplayManager-x64
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: ReplayManager-x86
+  - task: GitHubRelease@1
+    displayName: 'Create GitHub Release'
+    # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
+    inputs:
+      gitHubConnection: 'github.com_ThiccDaddie'
+      repositoryName: 'ThiccDaddie/ReplayManager'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'userSpecifiedTag'
+      tag: '$(Build.BuildNumber)'
+      releaseNotesSource: 'inline'
+      assets: '$(Pipeline.Workspace)\**\*.zip'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
