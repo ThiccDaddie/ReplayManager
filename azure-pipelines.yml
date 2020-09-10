@@ -47,12 +47,12 @@ steps:
     zipAfterPublish: true
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)
-    artifactName: ReplayManager
+    targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
+    artifactName: ReplayManager-$(rid)
 
 - task: DownloadPipelineArtifact@2
   inputs:
-    artifact: ReplayManager
+    artifact: ReplayManager-$(rid)
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'
   # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
