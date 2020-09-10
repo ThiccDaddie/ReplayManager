@@ -58,6 +58,6 @@ steps:
     tagSource: 'userSpecifiedTag'
     tag: '$(Build.BuildNumber)'
     releaseNotesSource: 'inline'
-    assets: '$(Pipeline.Workspace)/ReplayManager/**/*.zip'
+    assets: '$(Pipeline.Workspace)\**\*.zip'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
