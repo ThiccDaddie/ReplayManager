@@ -28,7 +28,8 @@ stages:
 - stage: build_and_publish
   displayName: Build and Publish
   jobs:
-  - job: Build
+  - job: build
+    displayName: Build
     steps:
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK 3.x'
@@ -41,7 +42,9 @@ stages:
         command: 'restore'
         projects: '**/*.csproj'
 
-  - job: Publish
+  - job: publish
+    displayName: Publish
+    condition: succeeded('build')
     strategy:
       matrix: 
         x86:
@@ -64,9 +67,11 @@ stages:
         artifactName: ReplayManager
 
 - stage: release
+  condition: succeeded('build_and_publish')
   displayName: Release
   jobs:   
-  - job: Release
+  - job: release
+    displayName: Release
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
