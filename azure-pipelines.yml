@@ -17,71 +17,53 @@ pool:
 
 variables:
   buildConfiguration: 'Release'  
+
+strategy:
+  matrix: 
+    x86:
+      rid: 'win-x86'
+    x64: 
+      rid: 'win-x64'
+  maxParallel: 2
     
-stages:
-- stage: build_and_publish
-  displayName: Build and Publish
-  jobs:
-  - job: build
-    displayName: Build
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core SDK 3.x'
-      inputs:
-        packageType: 'sdk'
-        version: '3.x'
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore project dependencies'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 3.x'
+  inputs:
+    packageType: 'sdk'
+    version: '3.x'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+- task: DotNetCoreCLI@2
+  displayName: 'Publish the project - $(buildConfiguration)'
+  inputs:
+    command: 'publish'
+    projects: '**/ReplayManager.Server.csproj'
+    publishWebProjects: false
+    arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
+    zipAfterPublish: true
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)
+    artifactName: ReplayManager
 
-  - job: publish
-    dependsOn: build
-    displayName: Publish
-    condition: succeeded('build')
-    strategy:
-      matrix: 
-        x86:
-          rid: 'win-x86'
-        x64: 
-          rid: 'win-x64'
-      maxParallel: 2
-    steps:
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - $(buildConfiguration)'
-      inputs:
-        command: 'publish'
-        projects: '**/ReplayManager.Server.csproj'
-        publishWebProjects: false
-        arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
-        zipAfterPublish: true
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
-        artifactName: ReplayManager
-
-- stage: release
-  condition: succeeded('build_and_publish')
-  displayName: Release
-  jobs:   
-  - job: release
-    displayName: Release
-    steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        artifact: ReplayManager
-    - task: GitHubRelease@1
-      displayName: 'Create GitHub Release'
-      # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
-      inputs:
-        gitHubConnection: 'github.com_ThiccDaddie'
-        repositoryName: 'ThiccDaddie/ReplayManager'
-        action: 'create'
-        target: '$(Build.SourceVersion)'
-        tagSource: 'userSpecifiedTag'
-        tag: '$(Build.BuildNumber)'
-        releaseNotesSource: 'inline'
-        assets: '$(Pipeline.Workspace)\**\*.zip'
-        changeLogCompareToRelease: 'lastFullRelease'
-        changeLogType: 'commitBased'
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: ReplayManager
+- task: GitHubRelease@1
+  displayName: 'Create GitHub Release'
+  # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
+  inputs:
+    gitHubConnection: 'github.com_ThiccDaddie'
+    repositoryName: 'ThiccDaddie/ReplayManager'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'userSpecifiedTag'
+    tag: '$(Build.BuildNumber)'
+    releaseNotesSource: 'inline'
+    assets: '$(Pipeline.Workspace)\**\*.zip'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
