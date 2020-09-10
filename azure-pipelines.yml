@@ -40,17 +40,23 @@ steps:
     zipAfterPublish: true
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: $(Pipeline.Workspace)
+    targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
     artifactName: ReplayManager
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: ReplayManager
+
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
+  # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
   inputs:
     gitHubConnection: 'github.com_ThiccDaddie'
     repositoryName: 'ThiccDaddie/ReplayManager'
     action: 'create'
     target: '$(Build.SourceVersion)'
-    tagSource: 'gitTag'
+    tagSource: 'userSpecifiedTag'
+    tag: '$(Build.BuildNumber)'
     releaseNotesSource: 'inline'
     assets: '$(Pipeline.Workspace)/ReplayManager/**/*.zip'
     changeLogCompareToRelease: 'lastFullRelease'
