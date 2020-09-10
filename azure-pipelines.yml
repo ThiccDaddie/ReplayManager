@@ -55,6 +55,7 @@ jobs:
 #  steps:
 #  - task: 
 - job: release
+  dependsOn: build_and_publish
   steps:
   - task: DownloadPipelineArtifact@2
     inputs:
