@@ -17,12 +17,6 @@ pool:
 
 variables:
   buildConfiguration: 'Release'  
-
-#stages:
-#- stage:
-#  jobs:
-#  - job:
-#    steps:
     
 stages:
 - stage: build_and_publish
@@ -43,6 +37,7 @@ stages:
         projects: '**/*.csproj'
 
   - job: publish
+    dependsOn: build
     displayName: Publish
     condition: succeeded('build')
     strategy:
