@@ -2,9 +2,25 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="ReplayManager.Installer" />
+
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="CompanyProgramMenuFolder" Name="!(loc.Company)">
+				</Directory>
 			</Directory>
+
+			<?if $(var.Platform)=x64?>
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="CompanyFolder" Name="!(loc.Company)">
+					<Directory Id="INSTALLFOLDER" Name="!(loc.ProductFolderName)" />
+				</Directory>
+			</Directory>
+			<?else?>
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="CompanyFolder" Name="!(loc.Company)">
+					<Directory Id="INSTALLFOLDER" Name="!(loc.ProductFolderName)" />
+				</Directory>
+			</Directory>
+			<?endif?>
 		</Directory>
 	</Fragment>
 </Wix>

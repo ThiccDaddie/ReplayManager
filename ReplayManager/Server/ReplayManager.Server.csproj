@@ -4,6 +4,7 @@
 		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<RootNamespace>ThiccDaddie.ReplayManager.Server</RootNamespace>
 		<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
+		<UserSecretsId>a404452d-01e8-4cce-bf33-99de66242b6a</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -2,10 +2,20 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!--TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer.-->
-			<!--<Component Id="ProductComponent">-->
-			<!--TODO: Insert files, registry keys, and other resources here.-->
-			<!--</Component>-->
+			<ComponentRef Id="MainAppShortcut"/>
 		</ComponentGroup>
+
+		<DirectoryRef Id="INSTALLFOLDER" FileSource="..\ReplayManager\Server\bin\Release\netcoreapp3.1\win-$(var.Platform)\publish\">
+			<Component Id="MainAppShortcut" Guid="{7C251CC9-0FC6-4795-8536-CBA9F239C4F2}">
+				<Shortcut Id="MainAppShortcut"
+									Name="!(loc.ProductName)"
+									Target="[INSTALLFOLDER]ReplayManager.Server.exe"
+									Directory="CompanyProgramMenuFolder"
+									WorkingDirectory="INSTALLFOLDER"
+									Icon="icon.ico"/>
+				<RegistryValue Id="RegShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductFolderName)" Name="Shortcut" Value="1" Type="integer" KeyPath="yes"/>
+				<RemoveFolder Id="RemoveStartMenu" Directory="CompanyProgramMenuFolder" On="uninstall"/>
+			</Component>
+		</DirectoryRef>
 	</Fragment>
 </Wix>
