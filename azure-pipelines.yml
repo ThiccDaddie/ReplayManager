@@ -52,7 +52,7 @@ jobs:
   - task: MSBuild@1
     inputs:
       solution: '**/*.Installer.wixproj'
-      msbuildArchitecture: x64
+      msbuildArchitecture: x86
       platform: '$(platform)'
       configuration: '$(buildConfiguration)'
       msbuildArguments: '/p:Version=1.2.3.4 /p:BinPath=$(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(platform)/Server /p:OutputPath=$(Build.ArtifactStagingDirectory)/installers/$(buildConfiguration)/$(platform) /p:RunWixToolsOutOfProc=true /p:SourceCodeControlRoot=$(Build.SourcesDirectory)/'
