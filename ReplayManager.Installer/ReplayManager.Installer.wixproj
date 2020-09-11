@@ -5,9 +5,9 @@
 		<Version Condition="'$(Version)' == ''">2.3.4.5</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<!--<SourceCodeControlRoot Condition="'$(SourceCodeControlRoot)' == ''">..\</SourceCodeControlRoot>
-		<WixToolPath Condition="'$(SourceCodeControlRoot)' != ''">$(SourceCodeControlRoot)wix\3.11.2</WixToolPath>-->
-		<WixToolPath>..\wix\3.11.2\</WixToolPath>
+		<SourceCodeControlRoot Condition="'$(SourceCodeControlRoot)' == ''">..\</SourceCodeControlRoot>
+		<WixToolPath Condition="'$(SourceCodeControlRoot)' != ''">$(SourceCodeControlRoot)wix\3.11.2\</WixToolPath>
+		<!--<WixToolPath>..\wix\3.11.2\</WixToolPath>-->
 		<!--<WixTargetsPath>$(WixToolPath)wix.targets</WixTargetsPath>
 		<WixTasksPath>$(WixToolPath)wixtasks.dll</WixTasksPath>-->
 	</PropertyGroup>
