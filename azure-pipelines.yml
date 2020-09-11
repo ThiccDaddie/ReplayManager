@@ -23,8 +23,10 @@ jobs:
   strategy:
     matrix: 
       x86:
+        platform: x86
         rid: 'win-x86'
       x64: 
+        platform: x64
         rid: 'win-x64'
     maxParallel: 2
 
@@ -43,14 +45,21 @@ jobs:
     displayName: 'Publish the project - $(buildConfiguration)'
     inputs:
       command: 'publish'
-      projects: '**/ReplayManager.Server.csproj'
       publishWebProjects: false
-      arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)'
-      zipAfterPublish: true
+      projects: '**/ReplayManager.Server.csproj'
+      arguments: '--no-restore -r $(rid) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(platform)'
+      zipAfterPublish: false
+  - task: MSBuild@1
+    inputs:
+      solution: '**/*.Installer.wixproj'
+      msbuildArchitecture: x64
+      platform: '$(platform)'
+      configuration: '$(buildConfiguration)'
+      msbuildArguments: '/p:Version=1.2.3.4 /p:BinPath=$(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(platform)/Server /p:OutputPath=$(Build.ArtifactStagingDirectory)/installers/$(buildConfiguration)/$(platform)'
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: $(Build.ArtifactStagingDirectory)/$(buildConfiguration)/$(rid)
-      artifactName: ReplayManager-$(rid)
+      targetPath: $(Build.ArtifactStagingDirectory)/installers/$(buildConfiguration)/$(platform)
+      artifactName: ReplayManager-$(platform)
 #- job: package
 #  steps:
 #  - task: 
@@ -74,6 +83,6 @@ jobs:
       tagSource: 'userSpecifiedTag'
       tag: '$(Build.BuildNumber)'
       releaseNotesSource: 'inline'
-      assets: '$(Pipeline.Workspace)\**\*.zip'
+      assets: '$(Pipeline.Workspace)\**\*'
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
