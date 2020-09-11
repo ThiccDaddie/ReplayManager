@@ -59,10 +59,10 @@ jobs:
   steps:
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifact: ReplayManager-x64
+      artifact: ReplayManager-win-x64
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifact: ReplayManager-x86
+      artifact: ReplayManager-win-x86
   - task: GitHubRelease@1
     displayName: 'Create GitHub Release'
     # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-v')
