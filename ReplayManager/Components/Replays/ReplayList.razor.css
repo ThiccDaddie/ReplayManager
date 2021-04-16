@@ -1,0 +1,12 @@
+﻿.replay-list {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
+	padding: 1rem;
+}
+
+::deep .replay-list-items {
+	flex-grow: 1;
+	overflow-y: auto;
+}

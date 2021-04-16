@@ -1,0 +1,32 @@
+﻿@using MatBlazor
+@using Microsoft.Extensions.Options;
+
+@inject IOptionsMonitor<ReplayManagerOptions> Options
+
+@inherits LayoutComponentBase
+
+<div class="page">
+	@if (!Options.CurrentValue.ReplayDirectories.Any())
+	{
+<Redirect Url="setup" />
+				@Body}
+			else
+			{
+<MatDrawerContainer Style="width: 100vw; height: 100vh;" Class="full mat">
+	<MatDrawer Opened="true" Style="border-right: solid 1px rgb(224, 224, 224);">
+		<div style=" display: flex; flex-direction: column;">
+			<header style="padding: 5%; display: flex; justify-content: center;">
+				<div style="width: 50%;">
+					<RoundTitleImage />
+				</div>
+			</header>
+			<NavMenu />
+		</div>
+	</MatDrawer>
+	<MatDrawerContent>
+		<section style="width: 100%; height: 100%; padding: 5%; box-sizing: border-box;">
+			@Body
+		</section>
+	</MatDrawerContent>
+</MatDrawerContainer>}
+</div>

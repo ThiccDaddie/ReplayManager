@@ -1,0 +1,20 @@
+﻿::deep .main {
+	height: 60px;
+	width: 100%;
+	display: flex;
+	justify-content: space-between
+}
+
+.player-name {
+	display: flex;
+	align-items: center;
+}
+
+.column {
+	display: flex;
+	justify-content: space-between
+}
+
+::deep .column > * {
+	padding: 0 5px 0 5px;
+}

@@ -1,0 +1,21 @@
+﻿@namespace ReplayManager.Components
+
+<div>
+	<MatListItem Class="main">
+		<div class="player-name">
+			<MatBody2>@ReplayInfo.PlayerName</MatBody2>
+		</div>
+		<div class="column">
+			<MatBody2>@ReplayInfo.MapDisplayName</MatBody2>
+			<MatBody2>@ReplayInfo.PlayerVehicle</MatBody2>
+		</div>
+		<div class="column">
+			<MatBody2>@ReplayInfo.DateTime.ToString()</MatBody2>
+			<MatBody2>Server @ReplayInfo.RegionCode</MatBody2>
+			<MatBody2>Version @ReplayInfo.ClientVersionFromExe</MatBody2>
+		</div>
+	</MatListItem>
+</div>
+
+@code { [Parameter]
+	public ReplayInfo ReplayInfo { get; set; } }

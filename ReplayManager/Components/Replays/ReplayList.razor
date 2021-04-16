@@ -1,0 +1,64 @@
+﻿@using System.Linq
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
+@using ReplayManager.Services
+
+@namespace ReplayManager.Components
+@inject IReplayLoadingService ReplayLoadingService
+
+<MatCard class="replay-list">
+	<h2>
+		@(ReplayLoadingService.ReplaysLoaded)/@(ReplayLoadingService.TotalReplaysCount)
+		replays loaded in @(ReplayLoadingService.ElapsedTime.Elapsed.ToString(@"ss\.FF")) seconds
+	</h2>
+	<MatList Class="replay-list-items">
+		@foreach ((ReplayInfo replay, int index) in Replays.Skip(PageSize * PageIndex).Take(PageSize).Select((replay, index) => (replay, index)))
+		{
+<ReplayListItem ReplayInfo="@replay"></ReplayListItem> if (index < Replays.Count - 1)
+{
+<MatDivider></MatDivider>}
+}
+	</MatList>
+
+	<MatPaginator PageSize="@PageSize" Length="@Replays.Count" Page="@((data) => MySubject.OnNext(data))">
+
+	</MatPaginator>
+</MatCard>
+
+
+@code { public List<ReplayInfo> Replays { get; set; } = new List<ReplayInfo>();
+	int PageSize { get; set; } = 25;
+	int PageIndex { get; set; } = 0;
+	int Length { get; set; }
+
+	Subject<MatPaginatorPageEvent> MySubject { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			MySubject = new Subject<MatPaginatorPageEvent>();
+			MySubject.Throttle(TimeSpan.FromMilliseconds(100))
+						  .Subscribe(events => OnPage(events));
+
+			ReplayLoadingService.PropertyChanged += (sender, args) => InvokeAsync(StateHasChanged);
+			//Replays = (await ReplayLoadingService.LoadAllReplays()).ToList();
+			await foreach (ReplayInfo replay in ReplayLoadingService.LoadAllReplaysSequentially())
+			{
+				if (replay is not null)
+				{
+					Replays.Add(replay);
+					StateHasChanged();
+				}
+			}
+		}
+	}
+
+	void OnPage(MatPaginatorPageEvent e)
+	{
+		PageIndex = e.PageIndex;
+		PageSize = e.PageSize;
+		//PageLabel = PageSizeOptions.FirstOrDefault(options => options.Value == e.PageSize).Text;
+		//ApplyPaging();
+		InvokeAsync(StateHasChanged);
+	}}
