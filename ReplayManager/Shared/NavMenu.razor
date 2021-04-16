@@ -1,8 +1,16 @@
 ﻿@using MatBlazor
+@using ReplayManager.Services
+@using System.ComponentModel
+@inject IReplayLoadingService ReplayLoadingService
 
 @namespace ReplayManager.Shared
 
-<MatNavMenu Multi="true" Class="app-sidebar" Style="flex-grow:1;">
+<MatNavMenu Multi="true" Class="nav-menu">
+	<header style="padding: 5%; display: flex; justify-content: center;">
+		<div style="width: 50%;">
+			<RoundTitleImage />
+		</div>
+	</header>
 	<MatNavItem Href="/" NavLinkMatch="NavLinkMatch.All">
 		<MatIcon>home</MatIcon><span> &nbsp; Home</span>
 	</MatNavItem>
@@ -14,6 +22,37 @@
 	<MatNavItem Href="/settings">
 		<MatIcon>settings</MatIcon><span> &nbsp; Settings</span>
 	</MatNavItem>
+
+	<MatNavSubMenu Class="footer">
+		<div>
+			@if (ReplayLoadingService.DidLoadingSucceed)
+			{
+				<MatOverline>
+					@ReplayLoadingService.ReplaysLoaded @(ReplayLoadingService.ReplaysLoaded == 1 ? "replay" : "replays") loaded
+				</MatOverline>
+			}
+			else if (ReplayLoadingService.IsLoading)
+			{
+				<MatOverline>Loading replays...</MatOverline>
+				<MatProgressBar Progress="@((double)ReplayLoadingService.ReplaysLoaded / ReplayLoadingService.TotalReplaysCount)"></MatProgressBar>
+			}
+			else
+			{
+				<MatOverline>Waiting for more replays...</MatOverline>
+			}
+		</div>
+	</MatNavSubMenu>
 </MatNavMenu>
 
-@code {}
+@code
+{
+	protected override void OnInitialized()
+	{
+		ReplayLoadingService.PropertyChanged += ReplayLoadingServicePropertyChanged;
+	}
+
+	void ReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs handler)
+	{
+		InvokeAsync(StateHasChanged);
+	}
+}

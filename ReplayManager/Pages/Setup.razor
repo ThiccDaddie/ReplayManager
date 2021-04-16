@@ -10,80 +10,82 @@
 @inject NavigationManager Navigation
 @inject IOptionsMonitor<ReplayManagerOptions> Options
 @inject IOptionsWriter OptionsService
+@inject IReplayLoadingService ReplayLoadingService
 
 @if (Options.CurrentValue.ReplayDirectories.Any())
 {
-<Redirect Url="/" /> }
-			else
-			{
-<div class="main">
-	<div class="title-image">
-		<RoundTitleImage />
-	</div>
-	<MatH6 Class="title">First time, huh? Where are your replays?</MatH6>
-	<div class="directories-picker-wrapper">
-		<MatCard Class="directory-list">
-			<MatOverline>pick from these...</MatOverline>
-			<MatList>
-				@foreach ((string path, int index) in foundPaths
+	<Redirect Url="/" />
+}
+else
+{
+	<div class="main">
+		<div class="title-image">
+			<RoundTitleImage />
+		</div>
+		<MatH6 Class="title">First time, huh? Where are your replays?</MatH6>
+		<div class="directories-picker-wrapper">
+			<MatCard Class="directory-list">
+				<MatOverline>pick from these...</MatOverline>
+				<MatList>
+					@foreach ((string path, int index) in foundPaths
 .Where(path => !chosenPaths.Contains(path))
 .Select((item, index) => (item, index)))
-				{
-<MatListItem Style="display:flex; justify-content: space-between;">
-	<MatListItemText>
-		@path
-	</MatListItemText>
-	<MatIconButton Icon="add_circle_outline" OnClick="@(() => AddChosenPath(path))" />
-</MatListItem>
-							@if (index < foundPaths.Count - 1)
-							{
-<MatDivider></MatDivider>}}
+					{
+						<MatListItem Style="display:flex; justify-content: space-between;">
+							<MatListItemText>
+								@path
+							</MatListItemText>
+							<MatIconButton Icon="add_circle_outline" OnClick="@(() => AddChosenPath(path))" />
+						</MatListItem>
+						@if (index < foundPaths.Count - 1)
+						{
+							<MatDivider></MatDivider>}}
 
-			</MatList>
-		</MatCard>
+				</MatList>
+			</MatCard>
 
-		<MatCard>
-			<EditForm Model="@formModel" OnValidSubmit="@AddDirectory">
-				<MatOverline Class="directory-picker-title">
-					...or choose them manually like a scrub...
-				</MatOverline>
-				<p class="directory-picker">
-					<MatStringField @bind-Value="formModel.Path"
-									Icon="folder_open"
-									Style="width: 350px;"
-									IconTrailing="true"
-									Label="Replays folder"
-									IconOnClick="@ShowDirectoryDialog">
-					</MatStringField>
-					<ValidationMessage For="@(() => formModel.Path)" />
-				</p>
-				<CustomValidator @ref="@customValidator" />
-				<p>
-					<MatButton Type="submit">Add</MatButton>
-				</p>
-			</EditForm>
-		</MatCard>
+			<MatCard>
+				<EditForm Model="@formModel" OnValidSubmit="@AddDirectory">
+					<MatOverline Class="directory-picker-title">
+						...or choose them manually like a scrub...
+					</MatOverline>
+					<p class="directory-picker">
+						<MatStringField @bind-Value="formModel.Path"
+										Icon="folder_open"
+										Style="width: 350px;"
+										IconTrailing="true"
+										Label="Replays folder"
+										IconOnClick="@ShowDirectoryDialog">
+						</MatStringField>
+						<ValidationMessage For="@(() => formModel.Path)" />
+					</p>
+					<CustomValidator @ref="@customValidator" />
+					<p>
+						<MatButton Type="submit">Add</MatButton>
+					</p>
+				</EditForm>
+			</MatCard>
 
-		<MatCard Class="directory-list">
-			<MatOverline>... and here they are!</MatOverline>
-			<MatList>
-				@foreach ((string path, int index) in chosenPaths.Select((item, index) => (item, index)))
-				{
-<MatListItem>
-	@path
-	<MatIconButton Icon="remove_circle_outline" OnClick="@(() => RemoveChosenPath(path))" />
-</MatListItem>}
-			</MatList>
-		</MatCard>
-	</div>
-	<div class="footer">
-		<MatButton Disabled="@(!chosenPaths.Any())"
-				   OnClick="@Finish"
-				   Raised="true">
-			Done
-		</MatButton>
-	</div>
-</div>}
+			<MatCard Class="directory-list">
+				<MatOverline>... and here they are!</MatOverline>
+				<MatList>
+					@foreach ((string path, int index) in chosenPaths.Select((item, index) => (item, index)))
+					{
+						<MatListItem>
+							@path
+							<MatIconButton Icon="remove_circle_outline" OnClick="@(() => RemoveChosenPath(path))" />
+						</MatListItem>}
+				</MatList>
+			</MatCard>
+		</div>
+		<div class="footer">
+			<MatButton Disabled="@(!chosenPaths.Any())"
+					   OnClick="@Finish"
+					   Raised="true">
+				Done
+			</MatButton>
+		</div>
+	</div>}
 
 @code { FormModel formModel = new();
 	ReplayManagerOptions options = new();
@@ -188,11 +190,14 @@
 	async void Finish()
 	{
 		await OptionsService.WriteOptionsAsync(options with { ReplayDirectories = chosenPaths.ToList() });
+		chosenPaths = new();
 		onOptionsUpdated = Options.OnChange((options, _) =>
 		{
 			if (options.ReplayDirectories.Any())
 			{
 				Navigation.NavigateTo("/");
+				var filePaths = options.ReplayDirectories.SelectMany(path => Directory.EnumerateFiles(path, "*.wotreplay", SearchOption.AllDirectories));
+				ReplayLoadingService.LoadReplays(filePaths);
 				onOptionsUpdated.Dispose();
 			}
 		});

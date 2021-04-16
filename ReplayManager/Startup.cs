@@ -28,7 +28,7 @@ namespace ReplayManager
 											ReplayManagerOptions.ReplayManager));
 			services.AddSingleton<IReplayReader, ReplayReader>();
 			services.AddSingleton<IOptionsWriter, OptionsWriter>();
-			services.AddTransient<IReplayLoadingService, ReplayLoadingService>();
+			services.AddSingleton<IReplayLoadingService, ReplayLoadingService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

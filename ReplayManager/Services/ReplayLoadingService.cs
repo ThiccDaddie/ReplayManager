@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
+using ReplayManager.DataAccess;
 using ReplayManager.Reader;
 using ReplayManager.Shared;
 using Serilog;
@@ -7,30 +8,43 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ReplayManager.Services
 {
 	public class ReplayLoadingService : IReplayLoadingService
 	{
-		private readonly IOptionsMonitor<ReplayManagerOptions> _options;
 		private readonly IReplayReader _replayReader;
 
 		private int _totalReplaysCount = 0;
 		private int _replaysLoaded = 0;
+		private bool _isLoading = false;
+		private bool _didLoadingSucceed = false;
+
+		private CancellationTokenSource cancellationTokenSource;
+		private CancellationTokenSource CancellationTokenSource
+		{
+			get
+			{
+				return cancellationTokenSource;
+			}
+			set
+			{
+				if (cancellationTokenSource is not null)
+				{
+					cancellationTokenSource.Cancel();
+					cancellationTokenSource.Dispose();
+				}
+				cancellationTokenSource = value;
+			}
+		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
 		public int TotalReplaysCount
 		{
 			get
@@ -63,83 +77,117 @@ namespace ReplayManager.Services
 			}
 		}
 
+		public bool IsLoading
+		{
+			get
+			{
+				return _isLoading;
+			}
+			set
+			{
+				if (_isLoading != value)
+				{
+					_isLoading = value;
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
+		public bool DidLoadingSucceed
+		{
+			get
+			{
+				return _didLoadingSucceed;
+			}
+			set
+			{
+				if (_didLoadingSucceed != value)
+				{
+					_didLoadingSucceed = value;
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
 		public Stopwatch ElapsedTime { get; }
 
-		public ReplayLoadingService(IOptionsMonitor<ReplayManagerOptions> options, IReplayReader replayReader)
+		public ReplayLoadingService(IReplayReader replayReader)
 		{
-			_options = options;
 			_replayReader = replayReader;
 			ElapsedTime = new();
 		}
-		private IEnumerable<string> GetFilePaths(List<string> directory)
+		private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
 		{
-			return directory.SelectMany(path => Directory.EnumerateFiles(path, "*.wotreplay", SearchOption.AllDirectories));
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public async Task<IEnumerable<ReplayInfo>> LoadAllReplays(CancellationToken cancellationToken = default)
+		public async void LoadReplays(IEnumerable<string> filePaths, CancellationToken cancellationToken = default)
 		{
-			return await LoadReplays(GetFilePaths(_options.CurrentValue.ReplayDirectories), cancellationToken);
-		}
-
-		public IAsyncEnumerable<ReplayInfo> LoadAllReplaysSequentially(CancellationToken cancellationToken = default)
-		{
-			return LoadReplaysSequentially(GetFilePaths(_options.CurrentValue.ReplayDirectories), cancellationToken);
-		}
-
-		public async Task<IEnumerable<ReplayInfo>> LoadReplays(IEnumerable<string> filePaths, CancellationToken cancellationToken = default)
-		{
-			ElapsedTime.Restart();
-			TotalReplaysCount = 0;
-
-			cancellationToken.ThrowIfCancellationRequested();
-
-			TotalReplaysCount = filePaths.Count();
-			Log.Information($"Total replay count: {TotalReplaysCount}");
-
-			//Log.Information(@$"Data is {(_options.IsInitialised ? "" : "not")} initialised");
-			Log.Information($"Starting to load {TotalReplaysCount} replays");
-
-			ConcurrentBag<ReplayInfo> replayInfos = new();
-
-			Subject<int> MySubject = new();
-			//MySubject.Sample(TimeSpan.FromMilliseconds(500))
-			//			.Subscribe(async events => await NotifyClientsOfPercentageReplaysLoaded(events));
-			MySubject.Sample(TimeSpan.FromSeconds(1))
-						.Subscribe(events => Log.Information($"Loading replays {replayInfos.Count * 100 / TotalReplaysCount}% done"));
-
-			await Dasync.Collections.ParallelForEachExtensions.ParallelForEachAsync(filePaths, async filePath =>
+			try
 			{
-				try
+				IsLoading = true;
+				DidLoadingSucceed = false;
+				ElapsedTime.Restart();
+				ReplaysLoaded = 0;
+				TotalReplaysCount = 0;
+
+				CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+				cancellationToken = CancellationTokenSource.Token;
+				cancellationToken.ThrowIfCancellationRequested();
+
+				TotalReplaysCount = filePaths.Count();
+				Log.Information($"Total replay count: {TotalReplaysCount}");
+				Log.Information($"Starting to load {TotalReplaysCount} replays");
+
+				ConcurrentBag<ReplayInfo> replayInfos = new();
+
+				Subject<int> MySubject = new();
+				MySubject.Sample(TimeSpan.FromSeconds(1))
+							.Subscribe(events => Log.Information($"Loading replays {replayInfos.Count * 100 / TotalReplaysCount}% done"));
+
+				await Dasync.Collections.ParallelForEachExtensions.ParallelForEachAsync(filePaths, async filePath =>
 				{
-					ReplayInfo replay = await _replayReader.GetReplayInfoFromFile(filePath, cancellationToken);
-					if (replay != null)
+					try
 					{
-						replayInfos.Add(replay with { ReplayInfoId = filePath });
-						ReplaysLoaded++;
+						ReplayInfo replay = await _replayReader.GetReplayInfoFromFile(filePath, cancellationToken);
+						if (replay != null)
+						{
+							replayInfos.Add(replay with { ReplayInfoId = filePath });
+							ReplaysLoaded++;
+						}
+						else
+						{
+							TotalReplaysCount--;
+							Log.Information($"Invalid replay info. Skipping and subtracting total replay count. Current total replay count: {TotalReplaysCount}");
+						}
+						MySubject.OnNext(replayInfos.Count);
 					}
-					else
+					catch (OperationCanceledException)
+					{
+						Log.Warning("Loading replays cancelled");
+						throw;
+					}
+					catch (Exception e)
 					{
 						TotalReplaysCount--;
-						Log.Information($"Invalid replay info. Skipping and subtracting total replay count. Current total replay count: {TotalReplaysCount}");
+						Log.Warning(e, "Loading replay failed");
+						return;
 					}
-					MySubject.OnNext(replayInfos.Count);
-				}
-				catch (OperationCanceledException)
-				{
-					Log.Warning("Loading replays cancelled");
-					throw;
-				}
-				catch (Exception e)
-				{
-					TotalReplaysCount--;
-					Log.Warning(e, "Loading replay failed");
-					return;
-				}
-			}, maxDegreeOfParallelism: 20, cancellationToken: cancellationToken);
-			MySubject.OnCompleted();
-			Log.Information($"Done loading {TotalReplaysCount} replays");
-			ElapsedTime.Stop();
-			return replayInfos;
+				}, maxDegreeOfParallelism: 20, cancellationToken: cancellationToken);
+				MySubject.OnCompleted();
+				Log.Information($"Done loading {TotalReplaysCount} replays");
+				ElapsedTime.Stop();
+				using ReplaysContext context = new();
+				await context.Replays.AddRangeAsync(replayInfos, cancellationToken);
+				await context.SaveChangesAsync(cancellationToken);
+				DidLoadingSucceed = true;
+			}
+
+			catch (OperationCanceledException)
+			{
+				IsLoading = false;
+				CleanDatabase();
+			}
 		}
 
 		public async IAsyncEnumerable<ReplayInfo> LoadReplaysSequentially(IEnumerable<string> filePaths, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -147,6 +195,8 @@ namespace ReplayManager.Services
 			ElapsedTime.Restart();
 			TotalReplaysCount = 0;
 
+			CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			cancellationToken = CancellationTokenSource.Token;
 			cancellationToken.ThrowIfCancellationRequested();
 
 			TotalReplaysCount = filePaths.Count();
@@ -157,6 +207,7 @@ namespace ReplayManager.Services
 
 			foreach (string filePath in filePaths)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
 				ReplayInfo replay = null;
 				try
 				{
@@ -184,6 +235,12 @@ namespace ReplayManager.Services
 			}
 			Log.Information($"Done loading {TotalReplaysCount} replays");
 			ElapsedTime.Stop();
+		}
+
+		private static void CleanDatabase()
+		{
+			using ReplaysContext context = new();
+			context.Database.ExecuteSqlRaw("DELETE * FROM Replays");
 		}
 	}
 }

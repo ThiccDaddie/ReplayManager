@@ -14,14 +14,16 @@ namespace ReplayManager.Reader
 	{
 		public async Task<ReplayInfo> GetReplayInfoFromFile(string path, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			(string replayInfoJson, string _) = await ReadReplayFile(path, cancellationToken);
 			return JsonConvert.DeserializeObject<ReplayInfo>(replayInfoJson, new JsonSerializerSettings
 			{
 				DateFormatString = "dd.MM.yyyy HH:mm:ss"
 			});
 		}
-		private async Task<(string, string)> ReadReplayFile(string path, CancellationToken cancellationToken)
+		private static async Task<(string, string)> ReadReplayFile(string path, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			byte[] control = await File.ReadAllBytesAsync(path);
 
 			int blockCount = BitConverter.ToInt32(control.Skip(4).Take(4).ToArray(), 0);
