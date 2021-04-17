@@ -18,16 +18,23 @@
 			<MatBody2>Version @ReplayInfo.ClientVersionFromExe</MatBody2>
 		</div>
 		<div class="column">
-			<MatIconButton Toggled="@ReplayInfo.IsFavorite" ToggledChanged="@OnToggleFavorite" Icon="favorite_border" ToggleIcon="favorite" />
+			<MatIconButton Toggled="@ReplayInfo.IsFavorite" ToggledChanged="@OnToggleFavorite" Icon="star_border" ToggleIcon="star" />
 		</div>
 	</MatListItem>
 </div>
 
 @code { DebounceDispatcher dispatcher = new();
 	[Parameter]
+	public bool ReloadOnChange { get; set; }
+	[Parameter]
 	public ReplayInfo ReplayInfo { get; set; }
 	[Parameter]
 	public EventCallback<ReplayInfo> OnChange { get; set; }
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		Console.WriteLine(ReplayInfo.IsFavorite);
+	}
 
 	async Task OnToggleFavorite(bool toggled)
 	{
@@ -45,5 +52,8 @@
 		await context.SaveChangesAsync();
 		await context.DisposeAsync();
 		StateHasChanged();
-		await OnChange.InvokeAsync(ReplayInfo);
+		if (ReloadOnChange)
+		{
+			await OnChange.InvokeAsync(ReplayInfo);
+		}
 	} }

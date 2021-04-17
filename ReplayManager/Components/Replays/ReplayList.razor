@@ -9,16 +9,18 @@
 <div @ref="mainReference" class="main">
 	@if (Replays is not null && Replays.Any())
 	{
-<MatCard class="replay-list">
-	<MatList Class="@(IsFitToPage ? "replay-list-items fit-to-page":"replay-list-items")">
-		@foreach ((ReplayInfo replay, int index) in Replays.Select((replay, index) => (replay, index)))
-		{
-<ReplayListItem OnChange="@OnReplayItemChanged" ReplayInfo="@replay" /> if (index < Replays.Count - 1)
-{
-<MatDivider></MatDivider>}
-}
-	</MatList>
-</MatCard>}
+		<MatCard class="replay-list">
+			<MatList Class="@(IsFitToPage ? "replay-list-items fit-to-page":"replay-list-items")">
+				@foreach ((ReplayInfo replay, int index) in Replays.Select((replay, index) => (replay, index)))
+				{
+					<ReplayListItem OnChange="@OnReplayItemChanged"
+									ReplayInfo="@replay"
+									ReloadOnChange="@ReloadOnItemChanged" /> if (index < Replays.Count - 1)
+					{
+						<MatDivider></MatDivider>}
+				}
+			</MatList>
+		</MatCard>}
 </div>
 
 
@@ -28,6 +30,8 @@
 	public bool IsFitToPage { get; set; }
 	[Parameter]
 	public int ThrottleInterval { get; set; } = 10;
+	[Parameter]
+	public bool ReloadOnItemChanged { get; set; }
 	[Parameter]
 	public List<ReplayInfo> Replays { get; set; }
 	[Parameter]

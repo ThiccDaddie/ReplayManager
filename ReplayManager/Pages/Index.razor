@@ -1,21 +1,6 @@
 ﻿@page "/"
-@using ReplayManager.DataAccess
 
-@implements IDisposable
+<PagedReplayList />
 
-@if (replays is not null)
-{
-<PagedReplayList ReplaysQueryable="@replays" />
-}
 
-@code { IQueryable<ReplayInfo> replays;
-	ReplaysContext context = new();
-
-	protected override void OnInitialized()
-	{
-		replays = context.Replays.AsQueryable();
-	}
-	public void Dispose()
-	{
-		context.Dispose();
-	} }
+@code {}

@@ -15,13 +15,14 @@
 				Replays="@replays"
 				IsFitToPage="@isFitToPage"
 				OnFitPageNumberChanged="@HandleFitPageNumberChange"
-				OnReplayItemChanged="@OnReplayItemChanged" />
+				ReloadOnItemChanged="@ReloadOnItemChanged"
+				OnReplayItemChanged="@ReplayItemChanged" />
 
 	<DebouncedPaginator Length="@length"
 						PageIndex="@pageIndex"
 						PageSizeText="@pageSizeText"
 						PageSizeOptions="@pageSizeOptions"
-						OnPage="@OnPage" />
+						OnPage="@Page" />
 </div>
 
 @code { CancellationTokenSource cts;
@@ -44,10 +45,9 @@
 	ReplayList replayList;
 
 	[Parameter]
-	public IQueryable<ReplayInfo> ReplaysQueryable { get; set; }
-
+	public bool ReloadOnItemChanged { get; set; }
 	[Parameter]
-	public EventCallback<ReplayInfo> OnReplayItemChanged { get; set; }
+	public Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> ReplayQueryModifier { get; set; }
 
 	int GetPageSize()
 	{
@@ -69,11 +69,16 @@
 		}
 		cts = new CancellationTokenSource();
 		int pageSize = GetPageSize();
-		replays = await ReplaysQueryable.Skip(pageIndex * pageSize).Take(pageSize).ToListAsync(cts.Token);
+		using ReplaysContext context = new();
+		replays = await (
+			(ReplayQueryModifier is not null ? ReplayQueryModifier.Invoke(context.Replays) : context.Replays)
+			.Skip(pageIndex * pageSize)
+			.Take(pageSize)
+			.ToListAsync(cts.Token));
 		length = replays.Count();
 	}
 
-	async Task OnPage(BetterPaginatorPageEvent pageEvent)
+	async Task Page(BetterPaginatorPageEvent pageEvent)
 	{
 		pageIndex = pageEvent.PageIndex;
 		pageSizeText = pageEvent.SizeOption.Text;
@@ -97,6 +102,14 @@
 			pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / pageSize;
 			UpdatePageSizeOptions();
 			await ApplyPaging();
+		}
+	}
+
+	async Task ReplayItemChanged()
+	{
+		if (ReloadOnItemChanged)
+		{
+			await UpdateReplays();
 		}
 	}
 
