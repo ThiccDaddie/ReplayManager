@@ -5,6 +5,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Components\Replays\PagedReplayList.razor.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Components\Replays\PagedReplayList.razor.css" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="AsyncEnumerator" Version="4.0.2" />
 		<PackageReference Include="MatBlazor" Version="2.8.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
@@ -20,6 +28,10 @@
 	<ItemGroup>
 		<ProjectReference Include="..\ReplayManager.Reader\ReplayManager.Reader.csproj" />
 		<ProjectReference Include="..\ReplayManager.Shared\ReplayManager.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Migrations\" />
 	</ItemGroup>
 
 </Project>

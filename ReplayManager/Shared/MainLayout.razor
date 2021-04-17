@@ -1,6 +1,8 @@
 ﻿@using MatBlazor
 @using Microsoft.Extensions.Options;
-
+@using ReplayManager.Services
+@using System.ComponentModel
+@inject IReplayLoadingService ReplayLoadingService
 @inject IOptionsMonitor<ReplayManagerOptions> Options
 
 @inherits LayoutComponentBase
@@ -8,18 +10,65 @@
 <div class="page">
 	@if (!Options.CurrentValue.ReplayDirectories.Any())
 	{
-		<Redirect Url="setup" />
-		@Body}
-	else
-	{
-		<MatDrawerContainer Style="width: 100vw; height: 100vh;" Class="full mat">
-			<MatDrawer Opened="true" Style="border-right: solid 1px rgb(224, 224, 224);">
+<Redirect Url="setup" />
+				@Body}
+			else
+			{
+<MatAppBarContainer Style="height: 100%; display: flex; flex-direction: column;">
+	<MatAppBar Fixed="true">
+		<MatAppBarRow>
+			<MatAppBarSection>
+				<MatIconButton OnClick="@(() => toggleNavBar = !toggleNavBar)" Icon="menu" />
+				<MatAppBarTitle>Thicc Daddie's Replay Manager</MatAppBarTitle>
+			</MatAppBarSection>
+			<MatAppBarSection Align="@MatAppBarSectionAlign.End">
+				<MatOverline>
+					@replayLoadingStatus
+				</MatOverline>
+				@if (ReplayLoadingService.IsLoading)
+				{
+<MatThemeProvider Theme="@(Constants.ReverseTheme)">
+	<MatProgressCircle Indeterminate="false"
+					   Progress="@((double)ReplayLoadingService.ReplaysLoaded / ReplayLoadingService.TotalReplaysCount)"></MatProgressCircle>
+</MatThemeProvider>}
+			</MatAppBarSection>
+		</MatAppBarRow>
+	</MatAppBar>
+	<MatAppBarContent Style="flex-grow: 1;">
+		<MatDrawerContainer Style="height: 100%;">
+			<MatDrawer Opened="@toggleNavBar">
 				<NavMenu />
 			</MatDrawer>
-			<MatDrawerContent>
-				<section style="width: 100%; height: 100%; padding: 5%; box-sizing: border-box;">
-					@Body
-				</section>
+
+			<MatDrawerContent Id="mat-drawer-content" Style="height: 100%; padding: 1rem; box-sizing: border-box;">
+				@Body
 			</MatDrawerContent>
-		</MatDrawerContainer>}
+		</MatDrawerContainer>
+	</MatAppBarContent>
+</MatAppBarContainer>}
 </div>
+
+@code { bool toggleNavBar = true;
+	string replayLoadingStatus;
+
+	protected override void OnInitialized()
+	{
+		ReplayLoadingService.PropertyChanged += ReplayLoadingServicePropertyChanged;
+	}
+
+	void ReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs handler)
+	{
+		if (ReplayLoadingService.DidLoadingSucceed)
+		{
+			replayLoadingStatus = $"{ReplayLoadingService.ReplaysLoaded} {(ReplayLoadingService.ReplaysLoaded == 1 ? "replay" : "replays")} loaded";
+		}
+		else if (ReplayLoadingService.IsLoading)
+		{
+			replayLoadingStatus = @$"Loading {ReplayLoadingService.ReplaysLoaded}/{ReplayLoadingService.TotalReplaysCount} {(ReplayLoadingService.TotalReplaysCount == 1 ? "replay" : "replays")}";
+		}
+		else
+		{
+			replayLoadingStatus = string.Empty;
+		}
+		InvokeAsync(StateHasChanged);
+	} }

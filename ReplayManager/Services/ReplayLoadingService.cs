@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ReplayManager.DataAccess;
+﻿using ReplayManager.DataAccess;
 using ReplayManager.Reader;
 using ReplayManager.Shared;
 using Serilog;
@@ -186,7 +185,6 @@ namespace ReplayManager.Services
 			catch (OperationCanceledException)
 			{
 				IsLoading = false;
-				CleanDatabase();
 			}
 		}
 
@@ -235,12 +233,6 @@ namespace ReplayManager.Services
 			}
 			Log.Information($"Done loading {TotalReplaysCount} replays");
 			ElapsedTime.Stop();
-		}
-
-		private static void CleanDatabase()
-		{
-			using ReplaysContext context = new();
-			context.Database.ExecuteSqlRaw("DELETE * FROM Replays");
 		}
 	}
 }

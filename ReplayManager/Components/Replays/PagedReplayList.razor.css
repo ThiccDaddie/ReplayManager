@@ -1,0 +1,10 @@
+﻿.main {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+::deep .mat-paginator {
+	margin-top: 15px;
+}

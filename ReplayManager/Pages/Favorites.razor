@@ -1,0 +1,32 @@
+﻿@page "/favorites"
+@using ReplayManager.DataAccess
+
+@implements IDisposable
+
+@if (replays is not null)
+{
+<PagedReplayList ReplaysQueryable="@replays" OnReplayItemChanged="@(() => UpdateReplays())" />
+}
+
+@code { IQueryable<ReplayInfo> replays;
+	ReplaysContext context;
+
+	async Task UpdateReplays()
+	{
+		if (context is not null)
+		{
+			await context.DisposeAsync();
+		}
+		context = new();
+		replays = context.Replays.Where((replay) => replay.IsFavorite);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await UpdateReplays();
+	}
+
+	public void Dispose()
+	{
+		context.Dispose();
+	} }

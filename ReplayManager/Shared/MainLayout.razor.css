@@ -6,3 +6,7 @@
 .page {
 	height: 100%;
 }
+
+::deep .mdc-drawer.mat-drawer {
+	border-right: solid 1px rgb(224, 224, 224);
+}

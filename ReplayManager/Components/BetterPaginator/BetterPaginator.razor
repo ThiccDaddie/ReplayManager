@@ -1,0 +1,24 @@
+﻿@namespace ReplayManager.Components
+@inherits BaseMatDomComponent
+
+<div class="mat-paginator">
+	<div class="mat-paginator-container">
+		<div class="mat-paginator-page-size">
+			<div class="mat-paginator-page-size-label">@Label</div>
+			<MatSelectValue Class="mat-paginator-page-size-select" TValue="string" TItem="MatPageSizeOption" Items="@PageSizeOptions" Value="@PageSizeText" ValueChanged="@(_ => PageSizeChangedHandler(_))" ValueSelector="@(i => i.Text)"></MatSelectValue>
+		</div>
+
+
+		<div class="mat-paginator-range-actions">
+			<span class="mat-paginator-range-labelmat-paginator-range-label">@PageLabel @(PageIndex + 1) / @TotalPages</span>
+			<div class="mat-paginator-range-buttons">
+				<MatIconButton Icon="first_page" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.First, PageSizeText)) Disabled=@(PageIndex <= 0)></MatIconButton>
+				<MatIconButton Icon="navigate_before" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.Previous, PageSizeText)) Disabled=@(PageIndex <= 0)></MatIconButton>
+
+				<MatIconButton Icon="navigate_next" OnClick="@(async () => await NavigateToPage(MatPaginatorAction.Next, PageSizeText))" Disabled="@(TotalPages - PageIndex <= 1)"></MatIconButton>
+				<MatIconButton Icon="last_page" OnClick=@(async () => await NavigateToPage(MatPaginatorAction.Last, PageSizeText)) Disabled=@(TotalPages - PageIndex <= 1)></MatIconButton>
+			</div>
+		</div>
+
+	</div>
+</div>

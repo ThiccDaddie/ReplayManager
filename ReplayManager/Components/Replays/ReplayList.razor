@@ -1,74 +1,71 @@
 ﻿@using System.Linq
-@using System.Reactive.Subjects
-@using System.Reactive.Linq
 @using ReplayManager.Services
-@using ReplayManager.DataAccess
-@using System.ComponentModel
+@using ReplayManager.Helpers
 
 @namespace ReplayManager.Components
-@inject IReplayLoadingService ReplayLoadingService
+@implements IDisposable
+@inject IJSRuntime JSRuntime
 
+<div @ref="mainReference" class="main">
+	@if (Replays is not null && Replays.Any())
+	{
 <MatCard class="replay-list">
-	<MatList Class="replay-list-items">
+	<MatList Class="@(IsFitToPage ? "replay-list-items fit-to-page":"replay-list-items")">
 		@foreach ((ReplayInfo replay, int index) in Replays.Select((replay, index) => (replay, index)))
 		{
-			<ReplayListItem ReplayInfo="@replay"></ReplayListItem> if (index < Replays.Count - 1)
-			{
-				<MatDivider></MatDivider>}
-		}
-	</MatList>
-
-	<MatPaginator PageSize="@PageSize" Length="@Replays.Count" Page="@((data) => MySubject.OnNext(data))">
-
-	</MatPaginator>
-</MatCard>
-
-
-@code {
-	public List<ReplayInfo> Replays { get; set; } = new();
-	int PageSize { get; set; } = 25;
-	int PageIndex { get; set; } = 0;
-	int Length { get; set; }
-
-	Subject<MatPaginatorPageEvent> MySubject { get; set; }
-
-	private void HandleReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs args)
-	{
-		if (args.PropertyName == nameof(ReplayLoadingService.DidLoadingSucceed) && ReplayLoadingService.DidLoadingSucceed)
-		{
-			InvokeAsync(Page);
-		}
-	}
-
-	protected override void OnInitialized()
-	{
-		using ReplaysContext context = new();
-		context.Database.EnsureCreated();
-		MySubject = new Subject<MatPaginatorPageEvent>();
-		MySubject.Throttle(TimeSpan.FromMilliseconds(100))
-					  .Subscribe(events => OnPage(events));
-		ReplayLoadingService.PropertyChanged -= HandleReplayLoadingServicePropertyChanged;
-		ReplayLoadingService.PropertyChanged += HandleReplayLoadingServicePropertyChanged;
-	}
-
-	protected override void OnAfterRender(bool firstRender)
-	{
-		Page();
-	}
-
-	void OnPage(MatPaginatorPageEvent e)
-	{
-		PageIndex = e.PageIndex;
-		PageSize = e.PageSize;
-		//PageLabel = PageSizeOptions.FirstOrDefault(options => options.Value == e.PageSize).Text;
-		//ApplyPaging();
-		InvokeAsync(Page);
-	}
-
-	void Page()
-	{
-		using ReplaysContext context = new();
-		Replays = context.Replays.Skip(PageSize * PageIndex).Take(PageSize).ToList();
-		StateHasChanged();
-	}
+<ReplayListItem OnChange="@OnReplayItemChanged" ReplayInfo="@replay" /> if (index < Replays.Count - 1)
+{
+<MatDivider></MatDivider>}
 }
+	</MatList>
+</MatCard>}
+</div>
+
+
+@code { ElementReference mainReference;
+	DebounceDispatcher dispatcher = new();
+	[Parameter]
+	public bool IsFitToPage { get; set; }
+	[Parameter]
+	public int ThrottleInterval { get; set; } = 10;
+	[Parameter]
+	public List<ReplayInfo> Replays { get; set; }
+	[Parameter]
+	public EventCallback<int> OnFitPageNumberChanged { get; set; }
+	[Parameter]
+	public EventCallback<ReplayInfo> OnReplayItemChanged { get; set; }
+
+	async Task BrowserHasResized()
+	{
+		await dispatcher.Throttle(ThrottleInterval, () => InvokeAsync(async () => await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber())));
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await BrowserHasResized();
+			await JSRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
+			await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber());
+		}
+	}
+
+	protected override void OnParametersSet()
+	{
+		BrowserResizeService.OnResize -= BrowserHasResized;
+		if (IsFitToPage)
+		{
+			BrowserResizeService.OnResize += BrowserHasResized;
+		}
+	}
+
+	public async Task<int> GetFitPageNumber()
+	{
+		int availableHeight = await BrowserResizeService.GetInnerHeight(JSRuntime, mainReference);
+		return (int)((availableHeight - 3) / 60.5);
+	}
+
+	public void Dispose()
+	{
+		BrowserResizeService.OnResize -= BrowserHasResized;
+	} }

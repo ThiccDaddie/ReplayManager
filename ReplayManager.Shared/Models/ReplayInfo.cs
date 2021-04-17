@@ -13,6 +13,7 @@ namespace ReplayManager.Shared
 		string MapDisplayName,
 		DateTime DateTime,
 		int BattleType,
-		string PlayerName
+		string PlayerName,
+		bool IsFavorite
 		);
 }
