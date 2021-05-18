@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿// <copyright file="Program.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 

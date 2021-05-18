@@ -1,10 +1,3 @@
 ﻿@page "/favorites"
-@using System.Linq
-<PagedReplayList ReloadOnItemChanged="true" ReplayQueryModifier="@ReplayInfoQueryModifier" />
 
-@code {
-	IQueryable<ReplayInfo> ReplayInfoQueryModifier(IQueryable<ReplayInfo> replays)
-	{
-		return replays.Where(replay => replay.IsFavorite == true);
-	}
-}
+<PagedReplayList ReloadOnItemChanged="true" />

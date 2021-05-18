@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+﻿// <copyright file="BrowserResizeService.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace ReplayManager.Services
 {

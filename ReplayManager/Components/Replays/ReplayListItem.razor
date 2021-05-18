@@ -1,9 +1,4 @@
-﻿@using ReplayManager.DataAccess
-@using ReplayManager.Helpers
-
-@namespace ReplayManager.Components
-
-<div>
+﻿<div>
 	<MatListItem Class="main">
 		<div class="player-name">
 			<MatBody2>@ReplayInfo.PlayerName</MatBody2>
@@ -18,42 +13,10 @@
 			<MatBody2>Version @ReplayInfo.ClientVersionFromExe</MatBody2>
 		</div>
 		<div class="column">
-			<MatIconButton Toggled="@ReplayInfo.IsFavorite" ToggledChanged="@OnToggleFavorite" Icon="star_border" ToggleIcon="star" />
+			<MatIconButton Toggled="@ReplayInfo.IsFavorite"
+						   ToggledChanged="@OnToggleFavorite"
+						   Icon="star_border"
+						   ToggleIcon="star" />
 		</div>
 	</MatListItem>
 </div>
-
-@code { DebounceDispatcher dispatcher = new();
-	[Parameter]
-	public bool ReloadOnChange { get; set; }
-	[Parameter]
-	public ReplayInfo ReplayInfo { get; set; }
-	[Parameter]
-	public EventCallback<ReplayInfo> OnChange { get; set; }
-
-	protected override void OnAfterRender(bool firstRender)
-	{
-		Console.WriteLine(ReplayInfo.IsFavorite);
-	}
-
-	async Task OnToggleFavorite(bool toggled)
-	{
-		await dispatcher.Debounce(200, async () =>
-		{
-			await InvokeAsync(async () => await ToggleFavorite(toggled));
-		});
-	}
-
-	async Task ToggleFavorite(bool toggled)
-	{
-		ReplayInfo = ReplayInfo with { IsFavorite = toggled };
-		using ReplaysContext context = new();
-		context.Replays.Update(ReplayInfo);
-		await context.SaveChangesAsync();
-		await context.DisposeAsync();
-		StateHasChanged();
-		if (ReloadOnChange)
-		{
-			await OnChange.InvokeAsync(ReplayInfo);
-		}
-	} }

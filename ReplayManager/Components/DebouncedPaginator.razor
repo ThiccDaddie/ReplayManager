@@ -1,37 +1,4 @@
-﻿@using ReplayManager.Helpers
-@namespace ReplayManager.Components
-
-<BetterPaginator PageSizeOptions="@PageSizeOptions"
+﻿<BetterPaginator PageSizeOptions="@PageSizeOptions"
 				 PageSizeText="@PageSizeText"
 				 Length="@Length"
 				 Page="@Page" />
-
-@code { DebounceDispatcher debounceTimer;
-	[Parameter]
-	public int Length { get; set; }
-	[Parameter]
-	public int PageIndex { get; set; }
-	[Parameter]
-	public string PageSizeText { get; set; }
-	[Parameter]
-	public int DebounceInterval { get; set; } = 200;
-	[Parameter]
-	public IReadOnlyList<MatPageSizeOption> PageSizeOptions { get; set; }
-	[Parameter]
-	public EventCallback<BetterPaginatorPageEvent> OnPage { get; set; }
-
-	protected override void OnInitialized()
-	{
-		debounceTimer = new();
-	}
-
-	async Task Page(BetterPaginatorPageEvent pageEvent)
-	{
-		await debounceTimer.Debounce<BetterPaginatorPageEvent>(
-			DebounceInterval,
-			async data =>
-			{
-				await InvokeAsync(async () => await OnPage.InvokeAsync(data));
-			},
-			pageEvent);
-	}}

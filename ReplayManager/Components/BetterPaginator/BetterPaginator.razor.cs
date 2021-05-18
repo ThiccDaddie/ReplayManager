@@ -1,14 +1,30 @@
-﻿using MatBlazor;
-using Microsoft.AspNetCore.Components;
+﻿// <copyright file="BetterPaginator.razor.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MatBlazor;
+using Microsoft.AspNetCore.Components;
 
 namespace ReplayManager.Components
 {
 	public partial class BetterPaginator : BaseMatDomComponent, IBetterPaginator
 	{
+		public const string PageLabelDefault = "Page:";
+
+		private static readonly IReadOnlyList<MatPageSizeOption> DefaultPageSizeOptions = new MatPageSizeOption[]
+		{
+			new MatPageSizeOption(5),
+			new MatPageSizeOption(10),
+			new MatPageSizeOption(25),
+			new MatPageSizeOption(50),
+			new MatPageSizeOption(100),
+			new MatPageSizeOption(int.MaxValue, "*"),
+		};
+
 		[Parameter]
 		public EventCallback<BetterPaginatorPageEvent> Page { get; set; }
 
@@ -18,12 +34,9 @@ namespace ReplayManager.Components
 		[Parameter]
 		public string PageLabel { get; set; } = PageLabelDefault;
 
-
-		public static string PageLabelDefault = "Page:";
-
-
 		[Parameter]
 		public string PageSizeText { get; set; }
+
 		public int PageSize
 		{
 			get
@@ -31,6 +44,7 @@ namespace ReplayManager.Components
 				return GetPageSizeFromPageSizeText(PageSizeText);
 			}
 		}
+
 		public MatPageSizeOption PageSizeOption
 		{
 			get
@@ -45,53 +59,27 @@ namespace ReplayManager.Components
 		[Parameter]
 		public int PageIndex { get; set; }
 
-		protected int TotalPages { get; set; }
+		[Parameter]
+		public IReadOnlyList<MatPageSizeOption> PageSizeOptions { get; set; } = DefaultPageSizeOptions;
 
 		[Parameter]
 		public EventCallback<int> PageIndexChanged { get; set; }
 
+		protected int TotalPages { get; set; }
 
-		protected override void OnParametersSet()
+		public static void OnInitializedStatic(IBetterPaginator paginator)
 		{
-			base.OnParametersSet();
-			Update();
+			if (paginator.PageSize == 0 && paginator.PageSizeOptions != null && paginator.PageSizeOptions.Count > 0)
+			{
+				paginator.PageSizeText = paginator.PageSizeOptions[0].Value.ToString();
+			}
 		}
-
 
 		public void Update()
 		{
 			// Length = ParentDataTable?.ItemsComponent?.Length() ?? Length;
 			TotalPages = CalculateTotalPages(PageSize);
 		}
-
-
-		public static void OnInitializedStatic(IBetterPaginator paginator)
-		{
-			if (paginator.PageSize == 0 && paginator.PageSizeOptions != null && paginator.PageSizeOptions.Count > 0)
-			{
-				paginator.PageSizeText = paginator.PageSizeOptions.First().Value.ToString();
-			}
-		}
-
-		protected override void OnInitialized()
-		{
-			base.OnInitialized();
-
-			OnInitializedStatic(this);
-
-			this.Update();
-		}
-
-		protected int CalculateTotalPages(int pageSize)
-		{
-			if (pageSize == 0)
-			{
-				return int.MaxValue;
-			}
-
-			return Math.Max(0, (int)Math.Ceiling((decimal)Length / pageSize));
-		}
-
 
 		public async Task NavigateToPage(MatPaginatorAction direction, string pageSizeText)
 		{
@@ -105,9 +93,9 @@ namespace ReplayManager.Components
 			{
 				try
 				{
-					page = ((PageIndex * PageSize) / pageSize);
+					page = (PageIndex * PageSize) / pageSize;
 				}
-				catch (OverflowException e)
+				catch (OverflowException)
 				{
 				}
 			}
@@ -137,7 +125,7 @@ namespace ReplayManager.Components
 					}
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 			}
 
@@ -161,25 +149,33 @@ namespace ReplayManager.Components
 					SizeOption = PageSizeOption,
 					Length = Length,
 				});
-				// ParentDataTable?.Update();
 			}
 		}
 
-
-		[Parameter]
-		public IReadOnlyList<MatPageSizeOption> PageSizeOptions { get; set; } = DefaultPageSizeOptions;
-
-
-		public static IReadOnlyList<MatPageSizeOption> DefaultPageSizeOptions = new MatPageSizeOption[]
+		protected override void OnParametersSet()
 		{
-			new MatPageSizeOption(5),
-			new MatPageSizeOption(10),
-			new MatPageSizeOption(25),
-			new MatPageSizeOption(50),
-			new MatPageSizeOption(100),
-			new MatPageSizeOption(int.MaxValue, "*"),
-		};
+			base.OnParametersSet();
+			Update();
+		}
 
+		protected override void OnInitialized()
+		{
+			base.OnInitialized();
+
+			OnInitializedStatic(this);
+
+			this.Update();
+		}
+
+		protected int CalculateTotalPages(int pageSize)
+		{
+			if (pageSize == 0)
+			{
+				return int.MaxValue;
+			}
+
+			return Math.Max(0, (int)Math.Ceiling((decimal)Length / pageSize));
+		}
 
 		protected async Task PageSizeChangedHandler(string key)
 		{

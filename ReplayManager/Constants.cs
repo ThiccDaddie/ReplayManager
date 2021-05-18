@@ -1,4 +1,8 @@
-﻿using MatBlazor;
+﻿// <copyright file="Constants.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using MatBlazor;
 
 namespace ReplayManager
 {
@@ -9,7 +13,7 @@ namespace ReplayManager
 			Primary = MatThemeColors.Cyan.A700.Value,
 			Secondary = MatThemeColors.Amber._300.Value,
 			OnPrimary = "black",
-			OnSecondary = "black"
+			OnSecondary = "black",
 		};
 
 		public static MatTheme ReverseTheme { get; } = new()
@@ -17,7 +21,7 @@ namespace ReplayManager
 			Primary = MatThemeColors.Amber._300.Value,
 			Secondary = MatThemeColors.Cyan.A700.Value,
 			OnPrimary = "black",
-			OnSecondary = "black"
+			OnSecondary = "black",
 		};
 	}
 }

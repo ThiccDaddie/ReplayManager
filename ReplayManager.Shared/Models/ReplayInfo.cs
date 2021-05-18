@@ -3,7 +3,8 @@
 namespace ReplayManager.Shared
 {
 	public record ReplayInfo(
-		string ReplayInfoId,
+		string Directory,
+		string RelativeFilePath,
 		bool IsFilePresent,
 		string PlayerVehicle,
 		string ClientVersionFromExe,

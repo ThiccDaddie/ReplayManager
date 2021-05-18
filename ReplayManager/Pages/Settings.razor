@@ -1,32 +1,6 @@
 ﻿@page "/settings"
 
-@using ReplayManager.Services
-@using Microsoft.Extensions.Options;
-
-@namespace ReplayManager.Pages
-@inject IOptionsMonitor<ReplayManagerOptions> OptionsProvider
-@inject IOptionsWriter OptionsService
-@*<MatTextField @bind-Value="@PrimaryReplaysDirectory" OnFocusOut="@ChangePrimaryReplaysDirectory" Label="Standard"></MatTextField>*@
-
-@code { //public string PrimaryReplaysDirectory
-	//{
-	//	get
-	//	{
-	//		return Options.PrimaryReplaysDirectory;
-	//	}
-	//	set
-	//	{
-	//		Options = Options with { PrimaryReplaysDirectory = value };
-	//	}
-	//}
-	ReplayManagerOptions Options { get; set; }
-
-	protected override void OnInitialized()
-	{
-		//Options = OptionsProvider.CurrentValue;
-	}
-
-	async void ChangePrimaryReplaysDirectory(FocusEventArgs _)
-	{
-		//await OptionsService.WriteOptionsAsync(Options);
-	} }
+<DirectoryPicker ChosenPaths="@ChosenPaths"
+				 FoundPaths="@FoundPaths"
+				 OnFinish="@Finish"
+				 AllowSaveNoPaths="true" />

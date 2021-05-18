@@ -1,16 +1,43 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
+﻿// <copyright file="CustomValidator.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace ReplayManager.Models
 {
 	public class CustomValidator : ComponentBase
 	{
-		private ValidationMessageStore _messageStore;
+		private ValidationMessageStore messageStore;
 
 		[CascadingParameter]
 		private EditContext CurrentEditContext { get; set; }
+
+		public void DisplayError(string key, List<string> errors)
+		{
+			messageStore.Add(CurrentEditContext.Field(key), errors);
+
+			CurrentEditContext.NotifyValidationStateChanged();
+		}
+
+		public void DisplayErrors(Dictionary<string, List<string>> errors)
+		{
+			foreach (var err in errors)
+			{
+				messageStore.Add(CurrentEditContext.Field(err.Key), err.Value);
+			}
+
+			CurrentEditContext.NotifyValidationStateChanged();
+		}
+
+		public void ClearErrors()
+		{
+			messageStore.Clear();
+			CurrentEditContext.NotifyValidationStateChanged();
+		}
 
 		protected override void OnInitialized()
 		{
@@ -23,35 +50,12 @@ namespace ReplayManager.Models
 					inside an {nameof(EditForm)}.");
 			}
 
-			_messageStore = new(CurrentEditContext);
+			messageStore = new(CurrentEditContext);
 
 			CurrentEditContext.OnValidationRequested += (s, e) =>
-				_messageStore.Clear();
+				messageStore.Clear();
 			CurrentEditContext.OnFieldChanged += (s, e) =>
-				_messageStore.Clear(e.FieldIdentifier);
-		}
-
-		public void DisplayError(string key, List<string> errors)
-		{
-			_messageStore.Add(CurrentEditContext.Field(key), errors);
-
-			CurrentEditContext.NotifyValidationStateChanged();
-		}
-
-		public void DisplayErrors(Dictionary<string, List<string>> errors)
-		{
-			foreach (var err in errors)
-			{
-				_messageStore.Add(CurrentEditContext.Field(err.Key), err.Value);
-			}
-
-			CurrentEditContext.NotifyValidationStateChanged();
-		}
-
-		public void ClearErrors()
-		{
-			_messageStore.Clear();
-			CurrentEditContext.NotifyValidationStateChanged();
+				messageStore.Clear(e.FieldIdentifier);
 		}
 	}
 }

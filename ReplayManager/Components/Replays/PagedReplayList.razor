@@ -1,137 +1,17 @@
-﻿@using Microsoft.EntityFrameworkCore
-@using ReplayManager.DataAccess
-@using System.Threading
-@using ReplayManager.Services
-@using System.ComponentModel
+﻿<div class="main">
+	<FilterPanel FilterExpression="@FilterExpression"
+				 FilterExpressionChanged="@OnFilterExpressionChanged" />
+	<div class="list">
+		<ReplayList Replays="@replays"
+					IsFitToPage="@isFitToPage"
+					OnFitPageNumberChanged="@HandleFitPageNumberChange"
+					ReloadOnItemChanged="@ReloadOnItemChanged"
+					OnReplayItemChanged="@ReplayItemChanged" />
 
-@namespace ReplayManager.Components
-
-@inject IReplayLoadingService ReplayLoadingService
-
-@implements IDisposable
-
-<div class="main">
-	<ReplayList @ref="replayList"
-				Replays="@replays"
-				IsFitToPage="@isFitToPage"
-				OnFitPageNumberChanged="@HandleFitPageNumberChange"
-				ReloadOnItemChanged="@ReloadOnItemChanged"
-				OnReplayItemChanged="@ReplayItemChanged" />
-
-	<DebouncedPaginator Length="@length"
-						PageIndex="@pageIndex"
-						PageSizeText="@pageSizeText"
-						PageSizeOptions="@pageSizeOptions"
-						OnPage="@Page" />
+		<DebouncedPaginator Length="@length"
+							PageIndex="@pageIndex"
+							PageSizeText="@pageSizeText"
+							PageSizeOptions="@pageSizeOptions"
+							OnPage="@Page" />
+	</div>
 </div>
-
-@code { CancellationTokenSource cts;
-	int pageIndex = 0;
-	string pageSizeText = "*";
-	int fitPageNumber = 0;
-	int length = 0;
-	bool isFitToPage = true;
-
-	List<ReplayInfo> replays;
-	IReadOnlyList<MatPageSizeOption> pageSizeOptions = new List<MatPageSizeOption>()
-{
-				new(5),
-				new(10),
-				new(25),
-				new(100),
-				new(0, "*")
-			};
-
-	ReplayList replayList;
-
-	[Parameter]
-	public bool ReloadOnItemChanged { get; set; }
-	[Parameter]
-	public Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> ReplayQueryModifier { get; set; }
-
-	int GetPageSize()
-	{
-		return pageSizeOptions.First(option => option.Text == pageSizeText).Value;
-	}
-
-	void UpdatePageSizeOptions()
-	{
-		pageSizeOptions.First(option => option.Text == "*").Value = fitPageNumber;
-		StateHasChanged();
-	}
-
-	async Task UpdateReplays()
-	{
-		if (cts is not null)
-		{
-			cts.Cancel();
-			cts.Dispose();
-		}
-		cts = new CancellationTokenSource();
-		int pageSize = GetPageSize();
-		using ReplaysContext context = new();
-		replays = await (
-			(ReplayQueryModifier is not null ? ReplayQueryModifier.Invoke(context.Replays) : context.Replays)
-			.Skip(pageIndex * pageSize)
-			.Take(pageSize)
-			.ToListAsync(cts.Token));
-		length = replays.Count();
-	}
-
-	async Task Page(BetterPaginatorPageEvent pageEvent)
-	{
-		pageIndex = pageEvent.PageIndex;
-		pageSizeText = pageEvent.SizeOption.Text;
-		isFitToPage = pageSizeText == "*";
-		await ApplyPaging();
-	}
-
-	async Task ApplyPaging()
-	{
-		await InvokeAsync(UpdateReplays);
-		await InvokeAsync(StateHasChanged);
-	}
-
-	async Task HandleFitPageNumberChange(int number)
-	{
-		if (number != fitPageNumber)
-		{
-			int pageSize = GetPageSize();
-			int currentFirstIndex = pageIndex * pageSize;
-			fitPageNumber = number;
-			pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / pageSize;
-			UpdatePageSizeOptions();
-			await ApplyPaging();
-		}
-	}
-
-	async Task ReplayItemChanged()
-	{
-		if (ReloadOnItemChanged)
-		{
-			await UpdateReplays();
-		}
-	}
-
-	async void HandleReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs args)
-	{
-		if (args.PropertyName == nameof(ReplayLoadingService.DidLoadingSucceed) && ReplayLoadingService.DidLoadingSucceed)
-		{
-			await UpdateReplays();
-		}
-	}
-
-	protected override void OnInitialized()
-	{
-		ReplayLoadingService.PropertyChanged += HandleReplayLoadingServicePropertyChanged;
-	}
-
-	public void Dispose()
-	{
-		if (cts is not null)
-		{
-			cts.Cancel();
-			cts.Dispose();
-		}
-		ReplayLoadingService.PropertyChanged -= HandleReplayLoadingServicePropertyChanged;
-	} }

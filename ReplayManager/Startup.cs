@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿// <copyright file="Startup.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ReplayManager.Models;
 using ReplayManager.Reader;
 using ReplayManager.Services;
-using ReplayManager.Shared;
 
 namespace ReplayManager
 {

@@ -1,10 +1,4 @@
 ﻿@using System.Linq
-@using ReplayManager.Services
-@using ReplayManager.Helpers
-
-@namespace ReplayManager.Components
-@implements IDisposable
-@inject IJSRuntime JSRuntime
 
 <div @ref="mainReference" class="main">
 	@if (Replays is not null && Replays.Any())
@@ -22,54 +16,3 @@
 			</MatList>
 		</MatCard>}
 </div>
-
-
-@code { ElementReference mainReference;
-	DebounceDispatcher dispatcher = new();
-	[Parameter]
-	public bool IsFitToPage { get; set; }
-	[Parameter]
-	public int ThrottleInterval { get; set; } = 10;
-	[Parameter]
-	public bool ReloadOnItemChanged { get; set; }
-	[Parameter]
-	public List<ReplayInfo> Replays { get; set; }
-	[Parameter]
-	public EventCallback<int> OnFitPageNumberChanged { get; set; }
-	[Parameter]
-	public EventCallback<ReplayInfo> OnReplayItemChanged { get; set; }
-
-	async Task BrowserHasResized()
-	{
-		await dispatcher.Throttle(ThrottleInterval, () => InvokeAsync(async () => await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber())));
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await BrowserHasResized();
-			await JSRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
-			await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber());
-		}
-	}
-
-	protected override void OnParametersSet()
-	{
-		BrowserResizeService.OnResize -= BrowserHasResized;
-		if (IsFitToPage)
-		{
-			BrowserResizeService.OnResize += BrowserHasResized;
-		}
-	}
-
-	public async Task<int> GetFitPageNumber()
-	{
-		int availableHeight = await BrowserResizeService.GetInnerHeight(JSRuntime, mainReference);
-		return (int)((availableHeight - 3) / 60.5);
-	}
-
-	public void Dispose()
-	{
-		BrowserResizeService.OnResize -= BrowserHasResized;
-	} }

@@ -1,0 +1,69 @@
+﻿<div class="main">
+	<div class="title-image">
+		<RoundTitleImage />
+	</div>
+
+	<MatH6 Class="title">First time, huh? Where are your replays?</MatH6>
+	<div class="directories-picker-wrapper">
+		<MatCard Class="directory-list">
+			<MatOverline>pick from these...</MatOverline>
+			<MatList>
+				@foreach ((string path, int index) in FoundPaths
+.Where(path => !ChosenPaths.Contains(path))
+.Select((item, index) => (item, index)))
+				{
+					<MatListItem Style="display:flex; justify-content: space-between;">
+						<MatListItemText>
+							@path
+						</MatListItemText>
+						<MatIconButton Icon="add_circle_outline" OnClick="@(() => AddChosenPath(path))" />
+					</MatListItem>
+					@if (index < FoundPaths.Count - 1)
+					{
+						<MatDivider></MatDivider>}}
+
+			</MatList>
+		</MatCard>
+
+		<MatCard>
+			<EditForm Model="@formModel" OnValidSubmit="@AddDirectory">
+				<MatOverline Class="directory-picker-title">
+					...or choose them manually like a scrub...
+				</MatOverline>
+				<p class="directory-picker">
+					<MatStringField @bind-Value="formModel.Path"
+									Icon="folder_open"
+									Style="width: 350px;"
+									IconTrailing="true"
+									Label="Replays folder"
+									IconOnClick="@ShowDirectoryDialog">
+					</MatStringField>
+					<ValidationMessage For="@(() => formModel.Path)" />
+				</p>
+				<CustomValidator @ref="@customValidator" />
+				<p>
+					<MatButton Outlined="true" Type="submit">Add</MatButton>
+				</p>
+			</EditForm>
+		</MatCard>
+
+		<MatCard Class="directory-list">
+			<MatOverline>... and here they are!</MatOverline>
+			<MatList>
+				@foreach ((string path, int index) in ChosenPaths.Select((item, index) => (item, index)))
+				{
+					<MatListItem>
+						@path
+						<MatIconButton Icon="remove_circle_outline" OnClick="@(() => RemoveChosenPath(path))" />
+					</MatListItem>}
+			</MatList>
+		</MatCard>
+	</div>
+	<div class="footer">
+		<MatButton Disabled="@(!ChosenPaths.Any() && !AllowSaveNoPaths)"
+				   OnClick="@(() => OnFinish.InvokeAsync(ChosenPaths))"
+				   Raised="true">
+			Done
+		</MatButton>
+	</div>
+</div>
