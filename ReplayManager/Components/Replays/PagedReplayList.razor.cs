@@ -2,6 +2,12 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
+using MatBlazor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
+using ReplayManager.DataAccess;
+using ReplayManager.Models;
+using ReplayManager.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,12 +15,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MatBlazor;
-using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using ReplayManager.DataAccess;
-using ReplayManager.Models;
-using ReplayManager.Services;
 
 namespace ReplayManager.Components.Replays
 {
@@ -36,8 +36,9 @@ namespace ReplayManager.Components.Replays
 		private int fitPageNumber = 0;
 		private int length = 0;
 		private bool isFitToPage = true;
-
 		private List<ReplayInfo> replays;
+
+		private Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> filter;
 
 		[Inject]
 		public IReplayLoadingService ReplayLoadingService { get; set; }
@@ -78,14 +79,21 @@ namespace ReplayManager.Components.Replays
 			StateHasChanged();
 		}
 
-		private IQueryable<ReplayInfo> ApplyFilterExpression(IQueryable<ReplayInfo> replays)
-		{
-			if (FilterExpression is not null)
-			{
-				return replays.Provider.CreateQuery<ReplayInfo>(FilterExpression);
-			}
+		//private IQueryable<ReplayInfo> ApplyFilterExpression(IQueryable<ReplayInfo> replays)
+		//{
+		//	//return replays.OrderBy(r => r.DateTime);
+		//	if (FilterExpression is not null)
+		//	{
+		//		return replays.Provider.CreateQuery<ReplayInfo>(FilterExpression);
+		//	}
 
-			return replays;
+		//	return replays;
+		//}
+
+		private async Task OnFilterChanged(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> filter)
+		{
+			this.filter = filter;
+			await ApplyPaging();
 		}
 
 		private async Task UpdateReplays()
@@ -100,7 +108,7 @@ namespace ReplayManager.Components.Replays
 			int pageSize = GetPageSize();
 			using ReplaysContext context = new();
 			replays = await
-				ApplyFilterExpression(context.Replays)
+				(filter is null ? context.Replays : filter(context.Replays))
 				.Skip(pageIndex * pageSize)
 				.Take(pageSize)
 				.ToListAsync(cts.Token);
@@ -142,12 +150,6 @@ namespace ReplayManager.Components.Replays
 			{
 				await UpdateReplays();
 			}
-		}
-
-		private async Task OnFilterExpressionChanged(Expression expression)
-		{
-			FilterExpression = expression;
-			await ApplyPaging();
 		}
 
 		private async void HandleReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs args)

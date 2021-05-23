@@ -61,13 +61,9 @@ namespace ReplayManager.Components.Replays
 			}
 		}
 
-		protected override void OnParametersSet()
+		protected override void OnInitialized()
 		{
-			BrowserResizeService.OnResize -= BrowserHasResized;
-			if (IsFitToPage)
-			{
-				BrowserResizeService.OnResize += BrowserHasResized;
-			}
+			BrowserResizeService.OnResize += BrowserHasResized;
 		}
 
 		private async Task BrowserHasResized()

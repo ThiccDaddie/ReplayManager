@@ -95,7 +95,7 @@ namespace ReplayManager.Components
 				{
 					page = (PageIndex * PageSize) / pageSize;
 				}
-				catch (OverflowException)
+				catch
 				{
 				}
 			}
@@ -136,7 +136,7 @@ namespace ReplayManager.Components
 
 			if (totalPages - page <= 1)
 			{
-				page = TotalPages == 0 ? 0 : TotalPages - 1;
+				page = TotalPages == 0 ? 0 : totalPages - 1;
 			}
 
 			if (PageIndex != page || pageSize != PageSize)

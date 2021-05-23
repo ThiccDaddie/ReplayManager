@@ -1,6 +1,5 @@
-﻿<div class="main">
-	<FilterPanel FilterExpression="@FilterExpression"
-				 FilterExpressionChanged="@OnFilterExpressionChanged" />
+﻿<div class="paged-replay-list-main">
+	<FilterPanel FilterChanged="@OnFilterChanged" />
 	<div class="list">
 		<ReplayList Replays="@replays"
 					IsFitToPage="@isFitToPage"
