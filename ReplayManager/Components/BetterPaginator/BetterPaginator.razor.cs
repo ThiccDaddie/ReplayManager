@@ -2,10 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MatBlazor;
 using Microsoft.AspNetCore.Components;
 
@@ -35,17 +31,22 @@ namespace ReplayManager.Components
 		public string PageLabel { get; set; } = PageLabelDefault;
 
 		[Parameter]
-		public string PageSizeText { get; set; }
+		public string? PageSizeText { get; set; }
 
-		public int PageSize
+		public int? PageSize
 		{
 			get
 			{
+				if (PageSizeText == null)
+				{
+					return null;
+				}
+
 				return GetPageSizeFromPageSizeText(PageSizeText);
 			}
 		}
 
-		public MatPageSizeOption PageSizeOption
+		public MatPageSizeOption? PageSizeOption
 		{
 			get
 			{
@@ -93,10 +94,18 @@ namespace ReplayManager.Components
 			{
 				try
 				{
-					page = (PageIndex * PageSize) / pageSize;
+					if (PageSize != null)
+					{
+						page = (PageIndex * PageSize.Value) / pageSize;
+					}
+					else
+					{
+						page = 0;
+					}
 				}
 				catch
 				{
+					page = 0;
 				}
 			}
 
@@ -143,12 +152,10 @@ namespace ReplayManager.Components
 			{
 				PageIndex = page;
 				PageSizeText = pageSizeText;
-				await Page.InvokeAsync(new BetterPaginatorPageEvent()
+				if (PageSizeOption != null)
 				{
-					PageIndex = page,
-					SizeOption = PageSizeOption,
-					Length = Length,
-				});
+					await Page.InvokeAsync(new BetterPaginatorPageEvent(page, PageSizeOption, Length));
+				}
 			}
 		}
 
@@ -167,14 +174,19 @@ namespace ReplayManager.Components
 			this.Update();
 		}
 
-		protected int CalculateTotalPages(int pageSize)
+		protected int CalculateTotalPages(int? pageSize)
 		{
+			if (pageSize == null)
+			{
+				return 0;
+			}
+
 			if (pageSize == 0)
 			{
 				return int.MaxValue;
 			}
 
-			return Math.Max(0, (int)Math.Ceiling((decimal)Length / pageSize));
+			return Math.Max(0, (int)Math.Ceiling((decimal)Length / pageSize.Value));
 		}
 
 		protected async Task PageSizeChangedHandler(string key)
@@ -184,7 +196,7 @@ namespace ReplayManager.Components
 
 		private int GetPageSizeFromPageSizeText(string text)
 		{
-			MatPageSizeOption sizeOption = PageSizeOptions.FirstOrDefault(option => option.Text == text);
+			MatPageSizeOption? sizeOption = PageSizeOptions.FirstOrDefault(option => option.Text == text);
 			return sizeOption is not null
 				? sizeOption.Value
 				: int.Parse(text);

@@ -2,7 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ReplayManager.Models;
 
@@ -15,7 +14,7 @@ namespace ReplayManager.DataAccess
 			Database.EnsureCreated();
 		}
 
-		public DbSet<ReplayInfo> Replays { get; set; }
+		public DbSet<ReplayInfo>? Replays { get; set; }
 
 		public async Task RemoveAllReplays()
 		{

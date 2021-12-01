@@ -2,14 +2,12 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Threading;
-using System.Threading.Tasks;
 using ReplayManager.Models;
 
 namespace ReplayManager.Reader
 {
 	public interface IReplayReader
 	{
-		Task<ReplayInfo> GetReplayInfoFromFile(string path, CancellationToken cancellationToken);
+		Task<ReplayInfo?> GetReplayInfoFromFileAsync(string path, CancellationToken cancellationToken = default);
 	}
 }

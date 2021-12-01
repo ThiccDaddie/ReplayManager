@@ -11,7 +11,7 @@ namespace ReplayManager.Services
 {
 	public class BrowserResizeService
 	{
-		public static event Func<Task> OnResize;
+		public static event Func<Task>? OnResize;
 
 		[JSInvokable]
 		public static async Task OnBrowserResize()

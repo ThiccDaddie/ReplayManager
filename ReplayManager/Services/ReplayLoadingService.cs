@@ -2,18 +2,12 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using ReplayManager.DataAccess;
 using ReplayManager.Models;
 using ReplayManager.Reader;
@@ -29,8 +23,8 @@ namespace ReplayManager.Services
 		private int replaysLoaded = 0;
 		private bool isLoading = false;
 		private bool loadedSuccesfully = false;
-		private NotifyTaskCompletion replaysLoader;
-		private CancellationTokenSource cancellationTokenSource;
+		private NotifyTaskCompletion? replaysLoader;
+		private CancellationTokenSource? cancellationTokenSource;
 
 		public ReplayLoadingService(IReplayReader replayReader)
 		{
@@ -38,7 +32,7 @@ namespace ReplayManager.Services
 			ElapsedTime = new();
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public int TotalReplaysCount
 		{
@@ -132,7 +126,7 @@ namespace ReplayManager.Services
 			}
 		}
 
-		private void UpdateStatus(object sender, PropertyChangedEventArgs args)
+		private void UpdateStatus(object? sender, PropertyChangedEventArgs args)
 		{
 			if (sender is NotifyTaskCompletion taskWatcher)
 			{
@@ -159,15 +153,13 @@ namespace ReplayManager.Services
 			mySubject.Sample(TimeSpan.FromSeconds(1))
 						.Subscribe(events => Log.Information($"Loading replays {replayInfos.Count * 100 / TotalReplaysCount}% done"));
 
-			await Dasync.Collections.ParallelForEachExtensions.ParallelForEachAsync(
-				filePaths,
-				async fileInfo =>
+			await Parallel.ForEachAsync(filePaths, async (filePath, cancellationToken) =>
 			{
 				try
 				{
-					var (directory, path) = fileInfo;
+					var (directory, path) = filePath;
 					string relativePath = Path.GetRelativePath(directory, path);
-					ReplayInfo replay = await replayReader.GetReplayInfoFromFile(path, cancellationToken);
+					ReplayInfo? replay = await replayReader.GetReplayInfoFromFileAsync(path, cancellationToken);
 					if (replay != null)
 					{
 						replayInfos.Add(replay with { Directory = directory, RelativeFilePath = relativePath });
@@ -192,9 +184,8 @@ namespace ReplayManager.Services
 					Log.Warning(e, "Loading replay failed");
 					return;
 				}
-			},
-				maxDegreeOfParallelism: 20,
-				cancellationToken: cancellationToken);
+			});
+
 			mySubject.OnCompleted();
 			Log.Information($"Done loading {TotalReplaysCount} replays");
 			ElapsedTime.Stop();

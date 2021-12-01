@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace ReplayManager.Models
 {
+#nullable disable annotations
 	public class CustomValidator : ComponentBase
 	{
 		private ValidationMessageStore messageStore;

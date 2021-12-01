@@ -13,7 +13,7 @@ namespace ReplayManager.Models
 		{
 		}
 
-		public TResult Result
+		public TResult? Result
 		{
 			get
 			{

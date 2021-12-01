@@ -2,10 +2,7 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
+#nullable disable annotations
 namespace ReplayManager.Helpers
 {
 	/// <summary>
@@ -21,7 +18,7 @@ namespace ReplayManager.Helpers
 	/// </summary>
 	public class DebounceDispatcher
 	{
-		private Timer timer;
+		private Timer? timer;
 
 		private DateTime TimerStarted { get; set; } = DateTime.UtcNow;
 

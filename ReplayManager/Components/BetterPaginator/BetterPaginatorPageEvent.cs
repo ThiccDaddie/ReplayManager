@@ -8,6 +8,13 @@ namespace ReplayManager.Components
 {
 	public class BetterPaginatorPageEvent
 	{
+		public BetterPaginatorPageEvent(int pageIndex, MatPageSizeOption sizeOption, int length)
+		{
+			PageIndex = pageIndex;
+			SizeOption = sizeOption;
+			Length = length;
+		}
+
 		public int PageIndex { get; set; }
 
 		public MatPageSizeOption SizeOption { get; set; }

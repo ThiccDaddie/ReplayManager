@@ -9,9 +9,9 @@ namespace ReplayManager.Components
 {
 	public interface IBetterPaginator
 	{
-		string PageSizeText { get; set; }
+		string? PageSizeText { get; set; }
 
-		int PageSize { get; }
+		int? PageSize { get; }
 
 		IReadOnlyList<MatPageSizeOption> PageSizeOptions { get; set; }
 	}

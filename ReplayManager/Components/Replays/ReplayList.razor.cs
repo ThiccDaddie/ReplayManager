@@ -11,12 +11,12 @@ using ReplayManager.Helpers;
 using ReplayManager.Models;
 using ReplayManager.Services;
 
+#nullable disable annotations
 namespace ReplayManager.Components.Replays
 {
 	public sealed partial class ReplayList : IDisposable
 	{
 		private readonly DebounceDispatcher dispatcher = new();
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "Assigned to in razor file")]
 		private ElementReference mainReference;
 
 		[Inject]

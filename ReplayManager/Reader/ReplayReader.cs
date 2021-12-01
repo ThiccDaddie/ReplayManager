@@ -16,42 +16,60 @@ namespace ReplayManager.Reader
 {
 	public class ReplayReader : IReplayReader
 	{
-		public async Task<ReplayInfo> GetReplayInfoFromFile(string path, CancellationToken cancellationToken)
+		public async Task<ReplayInfo?> GetReplayInfoFromFileAsync(string path, CancellationToken cancellationToken = default)
 		{
-			cancellationToken.ThrowIfCancellationRequested();
-			(string replayInfoJson, string _) = await ReadReplayFile(path, cancellationToken);
+			string? replayInfoJson = await ReadReplayFileAsync(path, cancellationToken);
+			if (replayInfoJson == null)
+			{
+				return null;
+			}
+
 			return JsonConvert.DeserializeObject<ReplayInfo>(replayInfoJson, new JsonSerializerSettings
 			{
 				DateFormatString = "dd.MM.yyyy HH:mm:ss",
 			});
 		}
 
-		private static async Task<(string block1, string block2)> ReadReplayFile(string path, CancellationToken cancellationToken)
+		private static async Task<string?> ReadReplayFileAsync(string path, CancellationToken cancellationToken = default)
 		{
-			cancellationToken.ThrowIfCancellationRequested();
-			byte[] control = await File.ReadAllBytesAsync(path, cancellationToken);
-
-			int blockCount = BitConverter.ToInt32(control.Skip(4).Take(4).ToArray(), 0);
-
-			List<byte[]> blocks = new();
-
-			int dataBlockSzOffset = 8;
-			for (int i = 0; i < blockCount; i++)
+			try
 			{
-				cancellationToken.ThrowIfCancellationRequested();
-				int blockSize = BitConverter.ToInt32(control.Skip(dataBlockSzOffset).Take(4).ToArray(), 0);
-				int dataBlockOffset = dataBlockSzOffset + 4;
+				// The offset in bytes at which you can find the "block size"
+				int dataBlockSzOffset = 8;
 
-				blocks.Add(control.Skip(dataBlockOffset).Take(blockSize).ToArray());
+				// The block size in bytes
+				byte[] blockSizeInBytes = new byte[4];
 
-				dataBlockSzOffset = dataBlockOffset + blockSize;
+				// The block size
+				int blockSize;
+
+				// The block of data
+				byte[] block;
+				using (FileStream sourceStream = File.Open(path, FileMode.Open, FileAccess.Read))
+				{
+					// skip ahead until the block size
+					sourceStream.Seek(dataBlockSzOffset, SeekOrigin.Begin);
+
+					// get the blocksize
+					await sourceStream.ReadAsync(blockSizeInBytes.AsMemory(0, 4), cancellationToken);
+
+					// convert the blocksize to int
+					blockSize = BitConverter.ToInt32(blockSizeInBytes, 0);
+
+					block = new byte[blockSize];
+
+					// get the block of data
+					await sourceStream.ReadAsync(block.AsMemory(0, blockSize), cancellationToken);
+				}
+
+				// decode the data
+				return Encoding.Default.GetString(block);
+			}
+			catch
+			{
 			}
 
-			List<string> data = blocks.Select(block =>
-			{
-				return Encoding.Default.GetString(block);
-			}).ToList();
-			return (data.ElementAtOrDefault(0), data.ElementAtOrDefault(1));
+			return null;
 		}
 	}
 }

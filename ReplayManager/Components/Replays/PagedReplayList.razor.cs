@@ -2,12 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using MatBlazor;
-using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using ReplayManager.DataAccess;
-using ReplayManager.Models;
-using ReplayManager.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +9,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MatBlazor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
+using ReplayManager.DataAccess;
+using ReplayManager.Models;
+using ReplayManager.Services;
 
 namespace ReplayManager.Components.Replays
 {
@@ -30,27 +30,23 @@ namespace ReplayManager.Components.Replays
 			new(0, "*"),
 				};
 
-		private CancellationTokenSource cts;
+		private CancellationTokenSource? cts;
 		private int pageIndex = 0;
 		private string pageSizeText = "*";
 		private int fitPageNumber = 0;
 		private int length = 0;
 		private bool isFitToPage = true;
-		private List<ReplayInfo> replays;
+		private List<ReplayInfo>? replays;
 
-		private Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> filter;
+		private Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>? filter;
 
+#nullable disable annotations
 		[Inject]
 		public IReplayLoadingService ReplayLoadingService { get; set; }
 
 		[Parameter]
 		public bool ReloadOnItemChanged { get; set; }
-
-		public Expression FilterExpression
-		{
-			get;
-			set;
-		}
+#nullable enable annotations
 
 		public void Dispose()
 		{
@@ -79,18 +75,7 @@ namespace ReplayManager.Components.Replays
 			StateHasChanged();
 		}
 
-		//private IQueryable<ReplayInfo> ApplyFilterExpression(IQueryable<ReplayInfo> replays)
-		//{
-		//	//return replays.OrderBy(r => r.DateTime);
-		//	if (FilterExpression is not null)
-		//	{
-		//		return replays.Provider.CreateQuery<ReplayInfo>(FilterExpression);
-		//	}
-
-		//	return replays;
-		//}
-
-		private async Task OnFilterChanged(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>> filter)
+		private async Task OnFilterChanged(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?> filter)
 		{
 			this.filter = filter;
 			await ApplyPaging();
@@ -107,8 +92,27 @@ namespace ReplayManager.Components.Replays
 			cts = new CancellationTokenSource();
 			int pageSize = GetPageSize();
 			using ReplaysContext context = new();
+
+			IQueryable<ReplayInfo>? queryable;
+			if (context.Replays is not null)
+			{
+				queryable = context.Replays;
+				if (filter is not null)
+				{
+					queryable = filter(context.Replays);
+					if (queryable is null)
+					{
+						queryable = context.Replays;
+					}
+				}
+			}
+			else
+			{
+				return;
+			}
+
 			replays = await
-				(filter is null ? context.Replays : filter(context.Replays))
+				queryable
 				.Skip(pageIndex * pageSize)
 				.Take(pageSize)
 				.ToListAsync(cts.Token);
@@ -152,7 +156,7 @@ namespace ReplayManager.Components.Replays
 			}
 		}
 
-		private async void HandleReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs args)
+		private async void HandleReplayLoadingServicePropertyChanged(object? sender, PropertyChangedEventArgs args)
 		{
 			if (args.PropertyName == nameof(ReplayLoadingService.LoadedSuccesfully) && ReplayLoadingService.LoadedSuccesfully)
 			{

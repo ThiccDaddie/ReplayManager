@@ -1,4 +1,8 @@
-﻿using System.ComponentModel;
+﻿// <copyright file="MainLayout.razor.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using ReplayManager.Models;
@@ -8,20 +12,22 @@ namespace ReplayManager.Shared
 {
 	public partial class MainLayout : LayoutComponentBase
 	{
-		private string replayLoadingStatus;
+		private string? replayLoadingStatus;
 
+#nullable disable annotations
 		[Inject]
 		public IReplayLoadingService ReplayLoadingService { get; set; }
 
 		[Inject]
 		public IOptionsMonitor<ReplayManagerOptions> Options { get; set; }
+#nullable enable annotations
 
 		protected override void OnInitialized()
 		{
 			ReplayLoadingService.PropertyChanged += ReplayLoadingServicePropertyChanged;
 		}
 
-		private void ReplayLoadingServicePropertyChanged(object sender, PropertyChangedEventArgs handler)
+		private void ReplayLoadingServicePropertyChanged(object? sender, PropertyChangedEventArgs handler)
 		{
 			if (ReplayLoadingService.LoadedSuccesfully)
 			{

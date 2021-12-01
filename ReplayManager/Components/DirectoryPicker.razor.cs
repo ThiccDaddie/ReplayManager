@@ -13,11 +13,12 @@ namespace ReplayManager.Components
 	public partial class DirectoryPicker
 	{
 		private readonly FormModel formModel = new();
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "Assigned in razor file")]
+#nullable disable annotations
 		private CustomValidator customValidator;
+#nullable enable annotations
 
 		[Parameter]
-		public HashSet<string> FoundPaths { get; set; }
+		public HashSet<string>? FoundPaths { get; set; }
 
 		[Parameter]
 		public HashSet<string> ChosenPaths { get; set; } = new();
@@ -48,7 +49,7 @@ namespace ReplayManager.Components
 				UseDescriptionForTitle = true,
 			};
 
-			if ((bool)browser.ShowDialog())
+			if (browser.ShowDialog() == true)
 			{
 				formModel.Path = browser.SelectedPath;
 			}
@@ -86,7 +87,7 @@ namespace ReplayManager.Components
 
 		private class FormModel
 		{
-			public string Path { get; set; }
+			public string? Path { get; set; }
 		}
 	}
 }

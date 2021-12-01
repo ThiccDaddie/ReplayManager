@@ -10,6 +10,7 @@ using ReplayManager.Helpers;
 
 namespace ReplayManager.Components
 {
+#nullable disable annotations
 	public partial class DebouncedPaginator
 	{
 		private DebounceDispatcher debounceTimer;

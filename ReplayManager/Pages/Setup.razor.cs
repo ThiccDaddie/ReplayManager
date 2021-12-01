@@ -2,11 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using ReplayManager.DataAccess;
@@ -14,6 +9,7 @@ using ReplayManager.Helpers;
 using ReplayManager.Models;
 using ReplayManager.Services;
 
+#nullable disable annotations
 namespace ReplayManager.Pages
 {
 	public sealed partial class Setup : IDisposable

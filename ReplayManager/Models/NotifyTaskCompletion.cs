@@ -22,7 +22,7 @@ namespace ReplayManager.Models
 			}
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public TaskStatus Status
 		{
@@ -58,12 +58,12 @@ namespace ReplayManager.Models
 			get { return Task.IsFaulted; }
 		}
 
-		public AggregateException Exception
+		public AggregateException? Exception
 		{
 			get { return Task.Exception; }
 		}
 
-		public Exception InnerException
+		public Exception? InnerException
 		{
 			get
 			{
@@ -71,7 +71,7 @@ namespace ReplayManager.Models
 			}
 		}
 
-		public string ErrorMessage
+		public string? ErrorMessage
 		{
 			get
 			{

@@ -8,6 +8,7 @@ using ReplayManager.DataAccess;
 using ReplayManager.Helpers;
 using ReplayManager.Models;
 
+#nullable disable annotations
 namespace ReplayManager.Components.Replays
 {
 	public partial class ReplayListItem
@@ -35,7 +36,7 @@ namespace ReplayManager.Components.Replays
 		{
 			ReplayInfo = ReplayInfo with { IsFavorite = toggled };
 			using ReplaysContext context = new();
-			context.Replays.Update(ReplayInfo);
+			context.Replays?.Update(ReplayInfo);
 			await context.SaveChangesAsync();
 			StateHasChanged();
 			if (ReloadOnChange)
