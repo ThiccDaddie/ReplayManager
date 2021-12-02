@@ -1,4 +1,5 @@
 ﻿.index-main {
 	display: flex;
+	min-height: 0;
 	height: 100%;
 }

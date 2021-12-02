@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Fluxor;
+using Microsoft.EntityFrameworkCore;
 using ReplayManager.DataAccess;
 using ReplayManager.Models;
 using ReplayManager.Reader;
@@ -27,14 +28,14 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 			Log.Information($"Total replay count: {totalReplaysCount}");
 			Log.Information($"Starting to load {totalReplaysCount} replays");
 
-			ConcurrentBag<ReplayInfo> replayInfos = new();
+			ConcurrentBag<ReplayInfo> replays = new();
 
 			Subject<int> mySubject = new();
 			mySubject.Sample(TimeSpan.FromMilliseconds(50))
 						.Subscribe(events =>
 						{
-							Log.Information($"Loading replays {replayInfos.Count * 100 / totalReplaysCount}% done");
-							dispatcher.Dispatch(new UpdateLoadReplaysCounterAction(replayInfos.Count, totalReplaysCount));
+							Log.Information($"Loading replays {replays.Count * 100 / totalReplaysCount}% done");
+							dispatcher.Dispatch(new UpdateLoadReplaysCounterAction(replays.Count, totalReplaysCount));
 						});
 
 			await Parallel.ForEachAsync(filePaths, async (filePath, cancellationToken) =>
@@ -46,7 +47,7 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 					ReplayInfo? replay = await replayReader.GetReplayInfoFromFileAsync(path, cancellationToken);
 					if (replay is not null)
 					{
-						replayInfos.Add(replay with { Directory = directory, RelativeFilePath = relativePath });
+						replays.Add(replay with { Directory = directory, RelativeFilePath = relativePath });
 					}
 					else
 					{
@@ -54,7 +55,7 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 						Log.Information($"Invalid replay: {path}");
 					}
 
-					mySubject.OnNext(replayInfos.Count);
+					mySubject.OnNext(replays.Count);
 				}
 				catch (OperationCanceledException)
 				{
@@ -70,21 +71,15 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 			});
 
 			mySubject.OnCompleted();
-			Log.Information($"Done loading {replayInfos.Count} replays");
-			dispatcher.Dispatch(new LoadReplaysResultAction(replayInfos));
-		}
-
-		[EffectMethod]
-		public async Task HandleLoadReplaysResultAction(LoadReplaysResultAction action, IDispatcher dispatcher)
-		{
-			var replays = action.Replays;
-
+			Log.Information($"Done loading {replays.Count} replays");
 			using ReplaysContext context = new();
 			if (context.Replays is not null)
 			{
 				await context.RemoveAllReplays();
 				await context.Replays.AddRangeAsync(replays/*, cancellationToken*/);
 				await context.SaveChangesAsync(/*cancellationToken*/);
+				totalReplaysCount = await context.Replays.CountAsync();
+				dispatcher.Dispatch(new LoadReplaysResultAction(totalReplaysCount));
 			}
 		}
 	}

@@ -12,7 +12,7 @@ namespace ReplayManager.Models
 		string RelativeFilePath,
 		bool IsFilePresent,
 		string PlayerVehicle,
-		string ClientVersionFromExe,
+		string ClientVersionFromXml,
 		string RegionCode,
 		int PlayerID,
 		string ServerName,

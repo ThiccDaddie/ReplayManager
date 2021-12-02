@@ -1,4 +1,8 @@
-﻿using Fluxor;
+﻿// <copyright file="FetchReplaysFeatureState.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using Fluxor;
 
 namespace ReplayManager.Store.LoadReplaysUseCase
 {
@@ -8,8 +12,8 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 
 		protected override LoadReplaysState GetInitialState() => new()
 		{
-			IsLoading = false,
-			DoneLoading = false,
+			LoadingState = LoadingState.NotLoading,
+			//Replays = new(),
 			ReplaysLoaded = 0,
 			TotalReplays = 0,
 		};

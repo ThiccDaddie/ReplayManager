@@ -2,7 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using ReplayManager.DataAccess;
 using ReplayManager.Helpers;

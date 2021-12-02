@@ -1,11 +1,12 @@
-﻿using ReplayManager.Models;
-
-namespace ReplayManager.Store.LoadReplaysUseCase
+﻿namespace ReplayManager.Store.LoadReplaysUseCase
 {
 	public record LoadReplaysResultAction
 	{
-		public IEnumerable<ReplayInfo>? Replays { get; init; }
+		public int TotalReplaysLoaded { get; init; }
 
-		public LoadReplaysResultAction(IEnumerable<ReplayInfo> replays) => Replays = replays;
+		public LoadReplaysResultAction(int totalReplaysLoaded)
+		{
+			TotalReplaysLoaded = totalReplaysLoaded;
+		}
 	}
 }
