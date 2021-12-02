@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Fluxor;
+using Microsoft.EntityFrameworkCore;
 using ReplayManager.DataAccess;
 using ReplayManager.Models;
 using ReplayManager.Reader;
@@ -77,9 +78,9 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 				await context.RemoveAllReplays();
 				await context.Replays.AddRangeAsync(replays/*, cancellationToken*/);
 				await context.SaveChangesAsync(/*cancellationToken*/);
+				totalReplaysCount = await context.Replays.CountAsync();
+				dispatcher.Dispatch(new LoadReplaysResultAction(totalReplaysCount));
 			}
-
-			dispatcher.Dispatch(new LoadReplaysResultAction());
 		}
 	}
 }

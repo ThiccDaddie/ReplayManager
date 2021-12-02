@@ -6,27 +6,32 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReplayManager.DataAccess;
 
+#nullable disable
+
 namespace ReplayManager.Migrations
 {
     [DbContext(typeof(ReplaysContext))]
-    [Migration("20210417201851_InitialCreate")]
+    [Migration("20211202213433_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.0");
 
-            modelBuilder.Entity("ReplayManager.Shared.ReplayInfo", b =>
+            modelBuilder.Entity("ReplayManager.Models.ReplayInfo", b =>
                 {
-                    b.Property<string>("ReplayInfoId")
+                    b.Property<string>("Directory")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RelativeFilePath")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("BattleType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ClientVersionFromExe")
+                    b.Property<string>("ClientVersionFromXml")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateTime")
@@ -39,24 +44,29 @@ namespace ReplayManager.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("MapDisplayName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PlayerID")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PlayerName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PlayerVehicle")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RegionCode")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ServerName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("ReplayInfoId");
+                    b.HasKey("Directory", "RelativeFilePath");
 
                     b.ToTable("Replays");
                 });

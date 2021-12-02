@@ -1,11 +1,21 @@
-﻿namespace ReplayManager.Store.LoadReplaysUseCase
+﻿// <copyright file="FetchReplaysState.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+namespace ReplayManager.Store.LoadReplaysUseCase
 {
-	//[FeatureState]
+	public enum LoadingState
+	{
+		NotLoading,
+		LoadingAll,
+		LoadingNewFolders,
+		LoadingSingle,
+		DoneLoading,
+	}
+
 	public record LoadReplaysState
 	{
-		public bool IsLoading { get; init; }
-
-		public bool DoneLoading { get; init; }
+		public LoadingState LoadingState { get; init; }
 
 		public int ReplaysLoaded { get; init; }
 

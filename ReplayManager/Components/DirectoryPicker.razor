@@ -27,22 +27,22 @@
 		<MudCard>
 			
 			<EditForm Model="@formModel" OnValidSubmit="@AddDirectory">
-				<MatOverline Class="directory-picker-title">
+				<MudText Typo="Typo.overline" Class="directory-picker-title">
 					...or choose them manually like a scrub...
-				</MatOverline>
+				</MudText>
 				<p class="directory-picker">
-					<MatStringField @bind-Value="formModel.Path"
-									Icon="folder_open"
+					<MudTextField @bind-Value="formModel.Path"
+									Adornment="Adornment.End"
+									AdornmentIcon="@Icons.Material.Outlined.FolderOpen"
 									Style="width: 350px;"
-									IconTrailing="true"
 									Label="Replays folder"
-									IconOnClick="@ShowDirectoryDialog">
-					</MatStringField>
+									OnAdornmentClick="@ShowDirectoryDialog">
+					</MudTextField>
 					<ValidationMessage For="@(() => formModel.Path)" />
 				</p>
 				<CustomValidator @ref="@customValidator" />
 				<p>
-					<MatButton Outlined="true" Type="submit">Add</MatButton>
+					<MudButton Variant="Variant.Outlined" ButtonType="ButtonType.Submit">Add</MudButton>
 				</p>
 			</EditForm>
 		</MudCard>

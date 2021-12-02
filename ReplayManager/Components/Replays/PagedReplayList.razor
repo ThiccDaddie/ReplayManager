@@ -1,12 +1,13 @@
 ﻿<div class="paged-replay-list-main">
 	@*<FilterPanel FilterChanged="@OnFilterChanged" />*@
 	<div class="list">
-		<ReplayList Replays="@replays"
+		<ReplayList Replays="@FetchReplaysState.Value.Replays"
 					IsFitToPage="true"
 					ReloadOnItemChanged="@ReloadOnItemChanged"
 					OnReplayItemChanged="@ReplayItemChanged" />
 							
 		<MudPagination Count=@PageCount 
-					   SelectedChanged=@PageChanged/>
+					   SelectedChanged=@PageChanged
+					   Style="padding-top: 1rem;"/>
 	</div>
 </div>

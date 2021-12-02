@@ -42,7 +42,7 @@ namespace ReplayManager.Components.Replays
 		public async Task SetFitPageNumber()
 		{
 			int availableHeight = await BrowserResizeService.GetInnerHeight(JSRuntime, mainReference);
-			int maxReplays = (int)((availableHeight - 3) / 60.5);
+			int maxReplays = (int)((availableHeight - 3) / 108.5) * 3;
 			Dispatcher.Dispatch(new SetMaxReplaysAction(maxReplays));
 		}
 

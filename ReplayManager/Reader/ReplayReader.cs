@@ -2,13 +2,7 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using ReplayManager.Models;
 
@@ -17,20 +11,6 @@ namespace ReplayManager.Reader
 	public class ReplayReader : IReplayReader
 	{
 		public async Task<ReplayInfo?> GetReplayInfoFromFileAsync(string path, CancellationToken cancellationToken = default)
-		{
-			string? replayInfoJson = await ReadReplayFileAsync(path, cancellationToken);
-			if (replayInfoJson == null)
-			{
-				return null;
-			}
-
-			return JsonConvert.DeserializeObject<ReplayInfo>(replayInfoJson, new JsonSerializerSettings
-			{
-				DateFormatString = "dd.MM.yyyy HH:mm:ss",
-			});
-		}
-
-		private static async Task<string?> ReadReplayFileAsync(string path, CancellationToken cancellationToken = default)
 		{
 			try
 			{
@@ -63,7 +43,13 @@ namespace ReplayManager.Reader
 				}
 
 				// decode the data
-				return Encoding.Default.GetString(block);
+				string replayJson = Encoding.Default.GetString(block);
+
+				var replay = JsonConvert.DeserializeObject<ReplayInfo>(replayJson, new JsonSerializerSettings
+				{
+					DateFormatString = "dd.MM.yyyy HH:mm:ss",
+				});
+				return replay;
 			}
 			catch
 			{
