@@ -2,6 +2,7 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
+using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,10 @@ namespace ReplayManager
 			services.AddSingleton<IReplayReader, ReplayReader>();
 			services.AddSingleton<IOptionsWriter, OptionsWriter>();
 			services.AddSingleton<IReplayLoadingService, ReplayLoadingService>();
+			var currentAssembly = typeof(Startup).Assembly;
+			services.AddFluxor(options => options
+				.ScanAssemblies(currentAssembly)
+				.UseReduxDevTools());
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

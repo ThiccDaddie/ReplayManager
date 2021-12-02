@@ -24,6 +24,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+		<PackageReference Include="Fluxor.Blazor.Web" Version="4.2.1" />
+		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="4.2.1" />
 		<PackageReference Include="MatBlazor" Version="2.8.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
