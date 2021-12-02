@@ -1,16 +1,12 @@
 ﻿<div class="paged-replay-list-main">
-	<FilterPanel FilterChanged="@OnFilterChanged" />
+	@*<FilterPanel FilterChanged="@OnFilterChanged" />*@
 	<div class="list">
 		<ReplayList Replays="@replays"
-					IsFitToPage="@isFitToPage"
-					OnFitPageNumberChanged="@HandleFitPageNumberChange"
+					IsFitToPage="true"
 					ReloadOnItemChanged="@ReloadOnItemChanged"
 					OnReplayItemChanged="@ReplayItemChanged" />
-
-		<DebouncedPaginator Length="@length"
-							PageIndex="@pageIndex"
-							PageSizeText="@pageSizeText"
-							PageSizeOptions="@pageSizeOptions"
-							OnPage="@Page" />
+							
+		<MudPagination Count=@PageCount 
+					   SelectedChanged=@PageChanged/>
 	</div>
 </div>

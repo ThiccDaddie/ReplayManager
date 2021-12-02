@@ -1,6 +1,4 @@
-﻿using Fluxor;
-
-namespace ReplayManager.Store.LoadReplaysUseCase
+﻿namespace ReplayManager.Store.LoadReplaysUseCase
 {
 	//[FeatureState]
 	public record LoadReplaysState

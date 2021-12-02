@@ -3,43 +3,53 @@
 // </copyright>
 
 using System.ComponentModel;
-using MatBlazor;
+using Fluxor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using ReplayManager.DataAccess;
 using ReplayManager.Models;
 using ReplayManager.Services;
+using ReplayManager.Store.FitReplaysToWindowUseCase;
+using ReplayManager.Store.LoadReplaysUseCase;
 
 namespace ReplayManager.Components.Replays
 {
 	public sealed partial class PagedReplayList : IDisposable
 	{
-		private readonly IReadOnlyList<MatPageSizeOption>
-			pageSizeOptions = new List<MatPageSizeOption>()
-				{
-			new(5),
-			new(10),
-			new(25),
-			new(100),
-			new(0, "*"),
-				};
-
 		private CancellationTokenSource? cts;
 		private int pageIndex = 0;
-		private string pageSizeText = "*";
-		private int fitPageNumber = 0;
 		private int length = 0;
-		private bool isFitToPage = true;
+		private int maxReplaysPerPage = 0;
+
 		private List<ReplayInfo>? replays;
 
 		private Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>? filter;
 
 #nullable disable annotations
-		[Inject]
-		public IReplayLoadingService ReplayLoadingService { get; set; }
+		//[Inject]
+		//public IReplayLoadingService ReplayLoadingService { get; set; }
 
 		[Parameter]
 		public bool ReloadOnItemChanged { get; set; }
+
+		[Inject]
+		private IState<FitReplaysToWindowState> FitReplaysToWindowState { get; set; }
+
+		[Inject]
+		private IState<LoadReplaysState> LoadReplaysState { get; set; }
+
+		private int PageCount
+		{
+			get
+			{
+				if (maxReplaysPerPage > 0)
+				{
+					return length / maxReplaysPerPage;
+				}
+
+				return 0;
+			}
+		}
 #nullable enable annotations
 
 		public void Dispose()
@@ -50,23 +60,14 @@ namespace ReplayManager.Components.Replays
 				cts.Dispose();
 			}
 
-			ReplayLoadingService.PropertyChanged -= HandleReplayLoadingServicePropertyChanged;
+			LoadReplaysState.StateChanged -= OnLoadReplaysStateChanged;
+			FitReplaysToWindowState.StateChanged -= OnFitPageNumberChange;
 		}
 
 		protected override void OnInitialized()
 		{
-			ReplayLoadingService.PropertyChanged += HandleReplayLoadingServicePropertyChanged;
-		}
-
-		private int GetPageSize()
-		{
-			return pageSizeOptions.First(option => option.Text == pageSizeText).Value;
-		}
-
-		private void UpdatePageSizeOptions()
-		{
-			pageSizeOptions.First(option => option.Text == "*").Value = fitPageNumber;
-			StateHasChanged();
+			LoadReplaysState.StateChanged += OnLoadReplaysStateChanged;
+			FitReplaysToWindowState.StateChanged += OnFitPageNumberChange;
 		}
 
 		private async Task OnFilterChanged(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?> filter)
@@ -84,7 +85,6 @@ namespace ReplayManager.Components.Replays
 			}
 
 			cts = new CancellationTokenSource();
-			int pageSize = GetPageSize();
 			using ReplaysContext context = new();
 
 			IQueryable<ReplayInfo>? queryable;
@@ -107,20 +107,12 @@ namespace ReplayManager.Components.Replays
 
 			replays = await
 				queryable
-				.Skip(pageIndex * pageSize)
-				.Take(pageSize)
+				.Skip(pageIndex * maxReplaysPerPage)
+				.Take(maxReplaysPerPage)
 				.ToListAsync(cts.Token);
 
 			length = await context.Replays.CountAsync();
 			await InvokeAsync(StateHasChanged);
-		}
-
-		private async Task Page(BetterPaginatorPageEvent pageEvent)
-		{
-			pageIndex = pageEvent.PageIndex;
-			pageSizeText = pageEvent.SizeOption.Text;
-			isFitToPage = pageSizeText == "*";
-			await ApplyPaging();
 		}
 
 		private async Task ApplyPaging()
@@ -129,16 +121,22 @@ namespace ReplayManager.Components.Replays
 			await InvokeAsync(StateHasChanged);
 		}
 
-		private async Task HandleFitPageNumberChange(int number)
+		private async void OnFitPageNumberChange(object? sender, FitReplaysToWindowState state)
 		{
-			if (number != fitPageNumber)
+			if (state.MaxReplays != maxReplaysPerPage)
 			{
-				int pageSize = GetPageSize();
-				int currentFirstIndex = pageIndex * pageSize;
-				fitPageNumber = number;
-				pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / pageSize;
-				UpdatePageSizeOptions();
+				int currentFirstIndex = pageIndex * maxReplaysPerPage;
+				maxReplaysPerPage = state.MaxReplays;
+				pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / maxReplaysPerPage;
 				await ApplyPaging();
+			}
+		}
+
+		private async void OnLoadReplaysStateChanged(object? sender, LoadReplaysState state)
+		{
+			if (state.DoneLoading == true)
+			{
+				await UpdateReplays();
 			}
 		}
 
@@ -150,12 +148,10 @@ namespace ReplayManager.Components.Replays
 			}
 		}
 
-		private async void HandleReplayLoadingServicePropertyChanged(object? sender, PropertyChangedEventArgs args)
+		private async Task PageChanged(int page)
 		{
-			if (args.PropertyName == nameof(ReplayLoadingService.LoadedSuccesfully) && ReplayLoadingService.LoadedSuccesfully)
-			{
-				await UpdateReplays();
-			}
+			pageIndex = page;
+			await ApplyPaging();
 		}
 	}
 }

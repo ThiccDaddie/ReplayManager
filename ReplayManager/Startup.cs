@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MudBlazor.Services;
 using ReplayManager.Models;
 using ReplayManager.Reader;
 using ReplayManager.Services;
@@ -29,6 +30,7 @@ namespace ReplayManager
 		{
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
+			services.AddMudServices();
 			services.Configure<ReplayManagerOptions>(Configuration.GetSection(
 											ReplayManagerOptions.ReplayManager));
 			services.AddSingleton<IReplayReader, ReplayReader>();

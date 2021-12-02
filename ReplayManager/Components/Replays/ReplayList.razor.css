@@ -2,6 +2,7 @@
 	height: 100%;
 	overflow: hidden;
 	padding: 1px;
+	width: 100%;
 }
 
 ::deep .replay-list {
@@ -14,8 +15,3 @@
 	padding: 0;
 	overflow: hidden;
 }
-
-	::deep .replay-list-items:not(.fit-to-page) {
-		overflow-y: auto;
-		padding: 0;
-	}

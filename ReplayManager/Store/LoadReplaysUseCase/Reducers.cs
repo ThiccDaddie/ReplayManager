@@ -1,4 +1,8 @@
-﻿using Fluxor;
+﻿// <copyright file="Reducers.cs" company="Josh">
+// Copyright (c) Josh. All rights reserved.
+// </copyright>
+
+using Fluxor;
 
 namespace ReplayManager.Store.LoadReplaysUseCase
 {

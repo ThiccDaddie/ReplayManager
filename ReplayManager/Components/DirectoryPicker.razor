@@ -3,29 +3,29 @@
 		<RoundTitleImage />
 	</div>
 
-	<MatH6 Class="title">First time, huh? Where are your replays?</MatH6>
+	<MudText Typo="Typo.h6" Class="title">First time, huh? Where are your replays?</MudText>
 	<div class="directories-picker-wrapper">
-		<MatCard Class="directory-list">
-			<MatOverline>pick from these...</MatOverline>
-			<MatList>
+		<MudCard Class="directory-list">
+			<MudText Typo="Typo.overline">pick from these...</MudText>
+			<MudList>
 				@foreach ((string path, int index) in FoundPaths
-.Where(path => !ChosenPaths.Contains(path))
-.Select((item, index) => (item, index)))
+						.Where(path => !ChosenPaths.Contains(path))
+						.Select((item, index) => (item, index)))
 				{
-					<MatListItem Style="display:flex; justify-content: space-between;">
-						<MatListItemText>
-							@path
-						</MatListItemText>
-						<MatIconButton Icon="add_circle_outline" OnClick="@(() => AddChosenPath(path))" />
-					</MatListItem>
+					<MudListItem Style="display:flex; justify-content: space-between;">
+						@path
+						<MudIconButton Icon="@Icons.Material.Outlined.AddCircleOutline" OnClick="@(() => AddChosenPath(path))" />
+					</MudListItem>
 					@if (index < FoundPaths.Count - 1)
 					{
-						<MatDivider></MatDivider>}}
+						<MudDivider/>
+					}}
 
-			</MatList>
-		</MatCard>
+			</MudList>
+		</MudCard>
 
-		<MatCard>
+		<MudCard>
+			
 			<EditForm Model="@formModel" OnValidSubmit="@AddDirectory">
 				<MatOverline Class="directory-picker-title">
 					...or choose them manually like a scrub...
@@ -45,25 +45,26 @@
 					<MatButton Outlined="true" Type="submit">Add</MatButton>
 				</p>
 			</EditForm>
-		</MatCard>
+		</MudCard>
 
-		<MatCard Class="directory-list">
-			<MatOverline>... and here they are!</MatOverline>
-			<MatList>
+		<MudCard Class="directory-list">
+			<MudText Typo="Typo.overline">... and here they are!</MudText>
+			<MudList>
 				@foreach ((string path, int index) in ChosenPaths.Select((item, index) => (item, index)))
 				{
-					<MatListItem>
+					<MudListItem>
 						@path
-						<MatIconButton Icon="remove_circle_outline" OnClick="@(() => RemoveChosenPath(path))" />
-					</MatListItem>}
-			</MatList>
-		</MatCard>
+						<MudIconButton Icon="@Icons.Material.Outlined.RemoveCircleOutline" OnClick="@(() => RemoveChosenPath(path))" />
+					</MudListItem>
+				}
+			</MudList>
+		</MudCard>
 	</div>
 	<div class="footer">
-		<MatButton Disabled="@(!ChosenPaths.Any() && !AllowSaveNoPaths)"
+		<MudButton Disabled="@(!ChosenPaths.Any() && !AllowSaveNoPaths)"
 				   OnClick="@(() => OnFinish.InvokeAsync(ChosenPaths))"
-				   Raised="true">
+				   Variant="Variant.Filled">
 			Done
-		</MatButton>
+		</MudButton>
 	</div>
 </div>

@@ -1,22 +1,22 @@
 ﻿<div>
-	<MatListItem Class="main">
+	<MudListItem Class="main">
 		<div class="player-name">
-			<MatBody2>@ReplayInfo.PlayerName</MatBody2>
+			<MudText Typo="Typo.body2">@ReplayInfo.PlayerName</MudText>
 		</div>
 		<div class="column">
-			<MatBody2>@ReplayInfo.MapDisplayName</MatBody2>
-			<MatBody2>@ReplayInfo.PlayerVehicle</MatBody2>
+			<MudText Typo="Typo.body2">@ReplayInfo.MapDisplayName</MudText>
+			<MudText Typo="Typo.body2">@ReplayInfo.PlayerVehicle</MudText>
 		</div>
 		<div class="column">
-			<MatBody2>@ReplayInfo.DateTime.ToString()</MatBody2>
-			<MatBody2>Server @ReplayInfo.RegionCode</MatBody2>
-			<MatBody2>Version @ReplayInfo.ClientVersionFromExe</MatBody2>
+			<MudText Typo="Typo.body2">@ReplayInfo.DateTime.ToString()</MudText>
+			<MudText Typo="Typo.body2">Server @ReplayInfo.RegionCode</MudText>
+			<MudText Typo="Typo.body2">Version @ReplayInfo.ClientVersionFromExe</MudText>
 		</div>
 		<div class="column">
-			<MatIconButton Toggled="@ReplayInfo.IsFavorite"
+			<MudToggleIconButton Toggled="@ReplayInfo.IsFavorite"
 						   ToggledChanged="@OnToggleFavorite"
-						   Icon="star_border"
-						   ToggleIcon="star" />
+						   Icon="@Icons.Material.Filled.Star"
+						   ToggledIcon="@Icons.Material.Outlined.Star" />
 		</div>
-	</MatListItem>
+	</MudListItem>
 </div>
