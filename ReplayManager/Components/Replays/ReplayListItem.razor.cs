@@ -18,10 +18,10 @@ namespace ReplayManager.Components.Replays
 		public bool ReloadOnChange { get; set; }
 
 		[Parameter]
-		public ReplayInfo ReplayInfo { get; set; }
+		public ReplayInfoOld ReplayInfo { get; set; }
 
 		[Parameter]
-		public EventCallback<ReplayInfo> OnChange { get; set; }
+		public EventCallback<ReplayInfoOld> OnChange { get; set; }
 
 		private async Task OnToggleFavorite(bool toggled)
 		{
@@ -33,15 +33,15 @@ namespace ReplayManager.Components.Replays
 
 		private async Task ToggleFavorite(bool toggled)
 		{
-			ReplayInfo = ReplayInfo with { IsFavorite = toggled };
-			using ReplaysContext context = new();
-			context.Replays?.Update(ReplayInfo);
-			await context.SaveChangesAsync();
-			StateHasChanged();
-			if (ReloadOnChange)
-			{
-				await OnChange.InvokeAsync(ReplayInfo);
-			}
+			//ReplayInfo = ReplayInfo with { IsFavorite = toggled };
+			//using ReplaysContext context = new();
+			//context.Replays?.Update(ReplayInfo);
+			//await context.SaveChangesAsync();
+			//StateHasChanged();
+			//if (ReloadOnChange)
+			//{
+			//	await OnChange.InvokeAsync(ReplayInfo);
+			//}
 		}
 	}
 }

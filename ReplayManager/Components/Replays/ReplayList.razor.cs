@@ -31,10 +31,10 @@ namespace ReplayManager.Components.Replays
 		public bool ReloadOnItemChanged { get; set; }
 
 		[Parameter]
-		public List<ReplayInfo> Replays { get; set; }
+		public List<ReplayInfoOld> Replays { get; set; }
 
 		[Parameter]
-		public EventCallback<ReplayInfo> OnReplayItemChanged { get; set; }
+		public EventCallback<ReplayInfoOld> OnReplayItemChanged { get; set; }
 
 		[Inject]
 		public IDispatcher Dispatcher { get; set; }

@@ -33,7 +33,6 @@ namespace ReplayManager
 			services.AddMudServices();
 			services.Configure<ReplayManagerOptions>(Configuration.GetSection(
 											ReplayManagerOptions.ReplayManager));
-			services.AddSingleton<IReplayReader, ReplayReader>();
 			services.AddSingleton<IOptionsWriter, OptionsWriter>();
 			services.AddSingleton<IReplayLoadingService, ReplayLoadingService>();
 			var currentAssembly = typeof(Startup).Assembly;

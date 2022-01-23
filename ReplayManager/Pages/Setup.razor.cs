@@ -53,6 +53,7 @@ namespace ReplayManager.Pages
 			{
 				if (options.ReplayDirectories.Any())
 				{
+					Dispose();
 					var filePaths = options
 					.ReplayDirectories
 					.SelectMany(path => Directory.EnumerateFiles(path, "*.wotreplay", SearchOption.AllDirectories).Select(file => (path, file)));

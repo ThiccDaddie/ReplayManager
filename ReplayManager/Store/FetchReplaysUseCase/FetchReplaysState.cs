@@ -6,6 +6,6 @@ namespace ReplayManager.Store.FetchReplaysUseCase
 	{
 		public List<ReplayInfo>? Replays { get; init; }
 
-		public int TotalReplayCount { get; init; }	
+		public int TotalReplayCount { get; init; }
 	}
 }

@@ -8,9 +8,9 @@ namespace ReplayManager.Store.ReplayFilterUseCase
 {
 	public record UpdateReplayFilterAction
 	{
-		public Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>? Filter { get; init; }
+		public Func<IQueryable<ReplayInfoOld>, IQueryable<ReplayInfoOld>?>? Filter { get; init; }
 
-		public UpdateReplayFilterAction(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>? filter)
+		public UpdateReplayFilterAction(Func<IQueryable<ReplayInfoOld>, IQueryable<ReplayInfoOld>?>? filter)
 		{
 			Filter = filter;
 		}

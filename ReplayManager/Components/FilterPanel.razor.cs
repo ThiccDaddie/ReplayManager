@@ -10,10 +10,10 @@ namespace ReplayManager.Components
 	public partial class FilterPanel
 	{
 		[Parameter]
-		public Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>>? Filter { get; set; }
+		public Func<IQueryable<ReplayInfoOld>, IQueryable<ReplayInfoOld>>? Filter { get; set; }
 
 		[Parameter]
-		public EventCallback<Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>> FilterChanged { get; set; }
+		public EventCallback<Func<IQueryable<ReplayInfoOld>, IQueryable<ReplayInfoOld>?>> FilterChanged { get; set; }
 
 		//public async void OnFilter(MatSortChangedEvent e)
 		//{

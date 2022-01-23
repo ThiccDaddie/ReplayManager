@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Fluxor;
@@ -12,19 +13,17 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 {
 	public class Effects
 	{
-		private readonly IReplayReader replayReader;
-
-		public Effects(IReplayReader replayReader)
-		{
-			this.replayReader = replayReader;
-		}
-
 		[EffectMethod]
 		public async Task HandleLoadReplaysAction(LoadReplaysAction action, IDispatcher dispatcher)
 		{
 			var filePaths = action.FilePaths;
 
 			int totalReplaysCount = filePaths.Count();
+			if (totalReplaysCount == 0)
+			{
+				return;
+			}
+
 			Log.Information($"Total replay count: {totalReplaysCount}");
 			Log.Information($"Starting to load {totalReplaysCount} replays");
 
@@ -34,24 +33,31 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 			mySubject.Sample(TimeSpan.FromMilliseconds(50))
 						.Subscribe(events =>
 						{
-							Log.Information($"Loading replays {replays.Count * 100 / totalReplaysCount}% done");
+							if (totalReplaysCount > 0)
+							{
+								Log.Information($"Loading replays {replays.Count * 100 / totalReplaysCount}% done");
+							}
+
 							dispatcher.Dispatch(new UpdateLoadReplaysCounterAction(replays.Count, totalReplaysCount));
 						});
 
+			Stopwatch stopwatch = Stopwatch.StartNew();
 			await Parallel.ForEachAsync(filePaths, async (filePath, cancellationToken) =>
 			{
 				try
 				{
 					var (directory, path) = filePath;
 					string relativePath = Path.GetRelativePath(directory, path);
-					ReplayInfo? replay = await replayReader.GetReplayInfoFromFileAsync(path, cancellationToken);
+					ReplayInfo? replay = await ReplayReader.GetReplayInfoFromFileAsync(path, cancellationToken);
 					if (replay is not null)
 					{
-						replays.Add(replay with { Directory = directory, RelativeFilePath = relativePath });
+						replay.Directory = directory;
+						replay.Path = relativePath;
+						replays.Add(replay);
 					}
 					else
 					{
-						totalReplaysCount--;
+						//totalReplaysCount--;
 						Log.Information($"Invalid replay: {path}");
 					}
 
@@ -70,6 +76,7 @@ namespace ReplayManager.Store.LoadReplaysUseCase
 				}
 			});
 
+			stopwatch.Stop();
 			mySubject.OnCompleted();
 			Log.Information($"Done loading {replays.Count} replays");
 			using ReplaysContext context = new();
