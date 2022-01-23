@@ -2,10 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
 namespace ReplayManager.Helpers
 {
 	public static class FileHelpers

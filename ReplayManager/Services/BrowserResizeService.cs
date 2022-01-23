@@ -2,8 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 

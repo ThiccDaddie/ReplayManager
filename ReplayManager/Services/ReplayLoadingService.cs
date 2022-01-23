@@ -2,16 +2,10 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
-using ReplayManager.DataAccess;
 using ReplayManager.Models;
-using ReplayManager.Reader;
-using Serilog;
 
 namespace ReplayManager.Services
 {

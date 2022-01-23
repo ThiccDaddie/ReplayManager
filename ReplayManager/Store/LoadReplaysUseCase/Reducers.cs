@@ -3,8 +3,6 @@
 // </copyright>
 
 using Fluxor;
-using ReplayManager.DataAccess;
-using ReplayManager.Models;
 
 namespace ReplayManager.Store.LoadReplaysUseCase
 {

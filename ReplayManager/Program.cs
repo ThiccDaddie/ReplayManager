@@ -2,10 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-
 namespace ReplayManager
 {
 	public class Program

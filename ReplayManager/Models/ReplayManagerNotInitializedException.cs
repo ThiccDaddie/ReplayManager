@@ -2,7 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
 using System.Runtime.Serialization;
 
 namespace ReplayManager.Models

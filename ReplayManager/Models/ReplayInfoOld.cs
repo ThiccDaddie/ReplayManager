@@ -2,8 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using ReplayManager.Models.Post;
 using ReplayManager.Models.Pre;
 
 namespace ReplayManager.Models

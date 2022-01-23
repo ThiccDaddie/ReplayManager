@@ -2,8 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNetCore.Components;
 using Ookii.Dialogs.Wpf;
 using ReplayManager.Models;

@@ -2,7 +2,6 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System.Linq;
 using ReplayManager.Models;
 
 namespace ReplayManager.Pages
