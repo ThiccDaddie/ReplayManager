@@ -2,14 +2,13 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Fluxor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using ReplayManager.Helpers;
 using ReplayManager.Models;
 using ReplayManager.Services;
+using ReplayManager.Store.FitReplaysToWindowUseCase;
 
 #nullable disable annotations
 namespace ReplayManager.Components.Replays
@@ -32,18 +31,19 @@ namespace ReplayManager.Components.Replays
 		public bool ReloadOnItemChanged { get; set; }
 
 		[Parameter]
-		public List<ReplayInfo> Replays { get; set; }
+		public List<ReplayInfoOld> Replays { get; set; }
 
 		[Parameter]
-		public EventCallback<int> OnFitPageNumberChanged { get; set; }
+		public EventCallback<ReplayInfoOld> OnReplayItemChanged { get; set; }
 
-		[Parameter]
-		public EventCallback<ReplayInfo> OnReplayItemChanged { get; set; }
+		[Inject]
+		public IDispatcher Dispatcher { get; set; }
 
-		public async Task<int> GetFitPageNumber()
+		public async Task SetFitPageNumber()
 		{
 			int availableHeight = await BrowserResizeService.GetInnerHeight(JSRuntime, mainReference);
-			return (int)((availableHeight - 3) / 60.5);
+			int maxReplays = (int)((availableHeight - 3) / 108.5) * 3;
+			Dispatcher.Dispatch(new SetMaxReplaysAction(maxReplays));
 		}
 
 		public void Dispose()
@@ -57,7 +57,6 @@ namespace ReplayManager.Components.Replays
 			{
 				await BrowserHasResized();
 				await JSRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
-				await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber());
 			}
 		}
 
@@ -68,7 +67,7 @@ namespace ReplayManager.Components.Replays
 
 		private async Task BrowserHasResized()
 		{
-			await dispatcher.Throttle(ThrottleInterval, () => InvokeAsync(async () => await OnFitPageNumberChanged.InvokeAsync(await GetFitPageNumber())));
+			await dispatcher.Throttle(ThrottleInterval, () => InvokeAsync(async () => await SetFitPageNumber()));
 		}
 	}
 }

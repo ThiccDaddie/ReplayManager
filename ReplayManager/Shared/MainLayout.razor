@@ -1,40 +1,56 @@
 ﻿@inherits LayoutComponentBase
 
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <div class="page">
 	@if (!Options.CurrentValue.ReplayDirectories.Any())
 	{
 		<Redirect Url="setup" />
-		@Body}
+		@Body
+	}
 	else
 	{
-		<MatAppBarContainer Style="height: 100%; display: flex; flex-direction: column;">
+		<MudAppBar Fixed="false">
+			<MudIconButton Edge="Edge.End"
+					   Link="/settings"
+					   Icon="@Icons.Material.Filled.Settings" />
+		</MudAppBar>
+		<div class="main">
+			@Body
+		</div>
+
+		@*<MatAppBarContainer Style="height: 100%; display: flex; flex-direction: column;">
 			<MatAppBar Fixed="true">
-				<MatAppBarRow>
-					<MatAppBarSection>
-						<MatAppBarTitle>Thicc Daddie's Replay Manager</MatAppBarTitle>
-					</MatAppBarSection>
-					<MatAppBarSection>
-						<MatOverline>
-							@replayLoadingStatus
-						</MatOverline>
-						@if (ReplayLoadingService.IsLoading)
-						{
-							<MatThemeProvider Theme="@Constants.ReverseTheme">
-								<MatProgressCircle Indeterminate="false"
-												   Progress="@((double)ReplayLoadingService.ReplaysLoaded / ReplayLoadingService.TotalReplaysCount)"></MatProgressCircle>
-							</MatThemeProvider>}
-					</MatAppBarSection>
-					<MatAppBarSection Align="@MatAppBarSectionAlign.End">
-						<a href="/settings">
-							<MatAppBarAction Icon="settings" />
-						</a>
-					</MatAppBarSection>
-				</MatAppBarRow>
+			<MatAppBarRow>
+			<MatAppBarSection>
+			<MatAppBarTitle>Thicc Daddie's Replay Manager</MatAppBarTitle>
+			</MatAppBarSection>
+			<MatAppBarSection>
+			<MatOverline>
+			@replayLoadingStatus
+			</MatOverline>
+			@if (ReplayLoadingService.IsLoading)
+			{
+			<MatThemeProvider Theme="@Constants.ReverseTheme">
+			<MatProgressCircle Indeterminate="false"
+			Progress="@((double)ReplayLoadingService.ReplaysLoaded / ReplayLoadingService.TotalReplaysCount)"></MatProgressCircle>
+			</MatThemeProvider>
+			}
+			</MatAppBarSection>
+			<MatAppBarSection Align="@MatAppBarSectionAlign.End">
+			<a href="/settings">
+			<MatAppBarAction Icon="settings" />
+			</a>
+			</MatAppBarSection>
+			</MatAppBarRow>
 			</MatAppBar>
 			<MatAppBarContent Style="flex-grow: 1;">
-				<MatDrawerContent Id="mat-drawer-content" Style="height: 100%; padding: 1rem; box-sizing: border-box;">
-					@Body
-				</MatDrawerContent>
+			<MatDrawerContent Id="mat-drawer-content" Style="height: 100%; padding: 1rem; box-sizing: border-box;">
+			@Body
+			</MatDrawerContent>
 			</MatAppBarContent>
-		</MatAppBarContainer>}
+			</MatAppBarContainer>*@
+	}
 </div>

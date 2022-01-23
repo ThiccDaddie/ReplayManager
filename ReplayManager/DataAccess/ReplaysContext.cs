@@ -4,6 +4,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using ReplayManager.Models;
+using ReplayManager.Models.Post;
+using ReplayManager.Models.Pre;
 
 namespace ReplayManager.DataAccess
 {
@@ -11,10 +13,13 @@ namespace ReplayManager.DataAccess
 	{
 		public ReplaysContext()
 		{
-			Database.EnsureCreated();
+			//Database.EnsureCreated();
 		}
 
-		public DbSet<ReplayInfo>? Replays { get; set; }
+		public DbSet<ReplayInfo> Replays { get; set; } = null!;
+		public DbSet<PreBattleInfo> PreBattleInfos { get; set; } = null!;
+
+		public DbSet<PreVehicle> PreVehicles { get; set; } = null!;
 
 		public async Task RemoveAllReplays()
 		{
@@ -37,8 +42,28 @@ namespace ReplayManager.DataAccess
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<ReplayInfo>()
-				.HasKey(r => new { r.Directory, r.RelativeFilePath });
+			//modelBuilder
+			//	.Entity<ReplayInfo>()
+			//	.HasKey(r => r.Path);
+
+			//modelBuilder
+			//	.Entity<ReplayInfo>()
+			//	.HasOne(r => r.PreBattleInfo)
+			//	.WithOne(p => p.ReplayInfo)
+			//	.HasForeignKey<PreBattleInfo>(p => p.ReplayInfoId);
+
+			//modelBuilder
+			//	.Entity<PreBattleInfo>()
+			//	.HasKey(p => p.PreBattleInfoId);
+
+			//modelBuilder
+			//	.Entity<PreVehicle>()
+			//	.HasKey(v => v.VehicleId);
+
+			
+			//modelBuilder
+			//	.Ignore<PreBattleInfo>()
+			//	.Ignore<PostBattleInfo>();
 		}
 	}
 }

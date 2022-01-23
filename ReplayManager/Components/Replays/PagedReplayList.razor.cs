@@ -2,166 +2,107 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using MatBlazor;
+using Fluxor;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using ReplayManager.DataAccess;
-using ReplayManager.Models;
-using ReplayManager.Services;
+using ReplayManager.Store.FetchReplaysUseCase;
+using ReplayManager.Store.FitReplaysToWindowUseCase;
+using ReplayManager.Store.LoadReplaysUseCase;
 
 namespace ReplayManager.Components.Replays
 {
-	public sealed partial class PagedReplayList : IDisposable
+	public sealed partial class PagedReplayList
 	{
-		private readonly IReadOnlyList<MatPageSizeOption>
-			pageSizeOptions = new List<MatPageSizeOption>()
-				{
-			new(5),
-			new(10),
-			new(25),
-			new(100),
-			new(0, "*"),
-				};
-
-		private CancellationTokenSource? cts;
 		private int pageIndex = 0;
-		private string pageSizeText = "*";
-		private int fitPageNumber = 0;
-		private int length = 0;
-		private bool isFitToPage = true;
-		private List<ReplayInfo>? replays;
-
-		private Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?>? filter;
+		private int maxReplaysPerPage = 0;
 
 #nullable disable annotations
-		[Inject]
-		public IReplayLoadingService ReplayLoadingService { get; set; }
 
 		[Parameter]
 		public bool ReloadOnItemChanged { get; set; }
+
+		[Inject]
+		private IState<FitReplaysToWindowState> FitReplaysToWindowState { get; set; }
+
+		[Inject]
+		private IState<LoadReplaysState> LoadReplaysState { get; set; }
+
+		[Inject]
+		private IState<FetchReplaysState> FetchReplaysState { get; set; }
+
+		[Inject]
+		private IDispatcher Dispatcher { get; set; }
+
+		private int PageCount
+		{
+			get
+			{
+				if (maxReplaysPerPage > 0)
+				{
+					return FetchReplaysState.Value.TotalReplayCount / maxReplaysPerPage;
+				}
+
+				return 0;
+			}
+		}
 #nullable enable annotations
 
 		public void Dispose()
 		{
-			if (cts is not null)
-			{
-				cts.Cancel();
-				cts.Dispose();
-			}
-
-			ReplayLoadingService.PropertyChanged -= HandleReplayLoadingServicePropertyChanged;
+			LoadReplaysState.StateChanged -= OnLoadReplaysStateChanged;
+			FetchReplaysState.StateChanged -= OnFetchReplaysStateChanged;
+			FitReplaysToWindowState.StateChanged -= OnFitPageNumberChange;
 		}
 
 		protected override void OnInitialized()
 		{
-			ReplayLoadingService.PropertyChanged += HandleReplayLoadingServicePropertyChanged;
+			LoadReplaysState.StateChanged += OnLoadReplaysStateChanged;
+			FetchReplaysState.StateChanged += OnFetchReplaysStateChanged;
+			FitReplaysToWindowState.StateChanged += OnFitPageNumberChange;
 		}
 
-		private int GetPageSize()
+		private void GetReplays()
 		{
-			return pageSizeOptions.First(option => option.Text == pageSizeText).Value;
+			int skip = pageIndex * maxReplaysPerPage;
+			int take = maxReplaysPerPage;
+			Dispatcher.Dispatch(new GetFilteredReplaysAction(skip, take, null));
 		}
 
-		private void UpdatePageSizeOptions()
+		private void OnFitPageNumberChange(object? sender, FitReplaysToWindowState state)
 		{
-			pageSizeOptions.First(option => option.Text == "*").Value = fitPageNumber;
-			StateHasChanged();
-		}
-
-		private async Task OnFilterChanged(Func<IQueryable<ReplayInfo>, IQueryable<ReplayInfo>?> filter)
-		{
-			this.filter = filter;
-			await ApplyPaging();
-		}
-
-		private async Task UpdateReplays()
-		{
-			if (cts is not null)
+			if (state.MaxReplays != maxReplaysPerPage)
 			{
-				cts.Cancel();
-				cts.Dispose();
-			}
-
-			cts = new CancellationTokenSource();
-			int pageSize = GetPageSize();
-			using ReplaysContext context = new();
-
-			IQueryable<ReplayInfo>? queryable;
-			if (context.Replays is not null)
-			{
-				queryable = context.Replays;
-				if (filter is not null)
-				{
-					queryable = filter(context.Replays);
-					if (queryable is null)
-					{
-						queryable = context.Replays;
-					}
-				}
-			}
-			else
-			{
-				return;
-			}
-
-			replays = await
-				queryable
-				.Skip(pageIndex * pageSize)
-				.Take(pageSize)
-				.ToListAsync(cts.Token);
-
-			length = await context.Replays.CountAsync();
-			await InvokeAsync(StateHasChanged);
-		}
-
-		private async Task Page(BetterPaginatorPageEvent pageEvent)
-		{
-			pageIndex = pageEvent.PageIndex;
-			pageSizeText = pageEvent.SizeOption.Text;
-			isFitToPage = pageSizeText == "*";
-			await ApplyPaging();
-		}
-
-		private async Task ApplyPaging()
-		{
-			await InvokeAsync(UpdateReplays);
-			await InvokeAsync(StateHasChanged);
-		}
-
-		private async Task HandleFitPageNumberChange(int number)
-		{
-			if (number != fitPageNumber)
-			{
-				int pageSize = GetPageSize();
-				int currentFirstIndex = pageIndex * pageSize;
-				fitPageNumber = number;
-				pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / pageSize;
-				UpdatePageSizeOptions();
-				await ApplyPaging();
+				int currentFirstIndex = pageIndex * maxReplaysPerPage;
+				maxReplaysPerPage = state.MaxReplays;
+				pageIndex = currentFirstIndex == 0 ? 0 : currentFirstIndex / maxReplaysPerPage;
+				GetReplays();
 			}
 		}
 
-		private async Task ReplayItemChanged()
+		private void OnLoadReplaysStateChanged(object? sender, LoadReplaysState state)
+		{
+			if (state.LoadingState == LoadingState.DoneLoading || state.LoadingState == LoadingState.NotLoading)
+			{
+				GetReplays();
+			}
+		}
+
+		private void OnFetchReplaysStateChanged(object? sender, FetchReplaysState state)
+		{
+			InvokeAsync(StateHasChanged);
+		}
+
+		private void ReplayItemChanged()
 		{
 			if (ReloadOnItemChanged)
 			{
-				await UpdateReplays();
+				GetReplays();
 			}
 		}
 
-		private async void HandleReplayLoadingServicePropertyChanged(object? sender, PropertyChangedEventArgs args)
+		private void PageChanged(int page)
 		{
-			if (args.PropertyName == nameof(ReplayLoadingService.LoadedSuccesfully) && ReplayLoadingService.LoadedSuccesfully)
-			{
-				await UpdateReplays();
-			}
+			pageIndex = page;
+			GetReplays();
 		}
 	}
 }

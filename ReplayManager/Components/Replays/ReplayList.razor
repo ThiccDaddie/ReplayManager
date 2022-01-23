@@ -1,18 +1,18 @@
 ﻿@using System.Linq
 
-<div @ref="mainReference" class="replay-list-main">
+@*<div @ref="mainReference" class="replay-list-main">
 	@if (Replays is not null && Replays.Any())
 	{
-		<MatCard class="replay-list">
-			<MatList Class="@(IsFitToPage ? "replay-list-items fit-to-page":"replay-list-items")">
-				@foreach ((ReplayInfo replay, int index) in Replays.Select((replay, index) => (replay, index)))
+		<MudCard class="replay-list">
+			<MudList Class="replay-list-items fit-to-page">
+				@foreach ((ReplayInfoOld replay, int index) in Replays.Select((replay, index) => (replay, index)))
 				{
 					<ReplayListItem OnChange="@OnReplayItemChanged"
 									ReplayInfo="@replay"
 									ReloadOnChange="@ReloadOnItemChanged" /> if (index < Replays.Count - 1)
 					{
-						<MatDivider></MatDivider>}
+						<MudDivider/>}
 				}
-			</MatList>
-		</MatCard>}
-</div>
+			</MudList>
+		</MudCard>}
+</div>*@

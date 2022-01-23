@@ -9,7 +9,7 @@ namespace ReplayManager.Pages
 {
 	public partial class Favorites
 	{
-		private static IQueryable<ReplayInfo> ReplayInfoQueryModifier(IQueryable<ReplayInfo> replays)
+		private static IQueryable<ReplayInfoOld> ReplayInfoQueryModifier(IQueryable<ReplayInfoOld> replays)
 		{
 			return replays.Where(replay => replay.IsFavorite == true);
 		}

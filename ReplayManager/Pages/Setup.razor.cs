@@ -2,12 +2,13 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
+using Fluxor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
-using ReplayManager.DataAccess;
 using ReplayManager.Helpers;
 using ReplayManager.Models;
 using ReplayManager.Services;
+using ReplayManager.Store.LoadReplaysUseCase;
 
 #nullable disable annotations
 namespace ReplayManager.Pages
@@ -26,7 +27,7 @@ namespace ReplayManager.Pages
 		public IOptionsWriter OptionsService { get; set; }
 
 		[Inject]
-		public IReplayLoadingService ReplayLoadingService { get; set; }
+		public IDispatcher Dispatcher { get; set; }
 
 		public HashSet<string> ChosenPaths { get; set; } = new();
 
@@ -48,17 +49,15 @@ namespace ReplayManager.Pages
 		private async Task FinishSetup(HashSet<string> paths)
 		{
 			await OptionsService.WriteOptionsAsync(new(ChosenPaths.ToList()));
-			onOptionsUpdated = OptionsMonitor.OnChange(async (options, _) =>
+			onOptionsUpdated = OptionsMonitor.OnChange((options, _) =>
 			{
 				if (options.ReplayDirectories.Any())
 				{
+					Dispose();
 					var filePaths = options
 					.ReplayDirectories
 					.SelectMany(path => Directory.EnumerateFiles(path, "*.wotreplay", SearchOption.AllDirectories).Select(file => (path, file)));
-					using ReplaysContext context = new();
-					await context.RemoveAllReplays();
-					ReplayLoadingService.Start(filePaths);
-					onOptionsUpdated.Dispose();
+					Dispatcher.Dispatch(new LoadReplaysAction(filePaths));
 					Navigation.NavigateTo("/");
 				}
 			});

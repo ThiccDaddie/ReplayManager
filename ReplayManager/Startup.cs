@@ -2,11 +2,13 @@
 // Copyright (c) Josh. All rights reserved.
 // </copyright>
 
+using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MudBlazor.Services;
 using ReplayManager.Models;
 using ReplayManager.Reader;
 using ReplayManager.Services;
@@ -28,11 +30,15 @@ namespace ReplayManager
 		{
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
+			services.AddMudServices();
 			services.Configure<ReplayManagerOptions>(Configuration.GetSection(
 											ReplayManagerOptions.ReplayManager));
-			services.AddSingleton<IReplayReader, ReplayReader>();
 			services.AddSingleton<IOptionsWriter, OptionsWriter>();
 			services.AddSingleton<IReplayLoadingService, ReplayLoadingService>();
+			var currentAssembly = typeof(Startup).Assembly;
+			services.AddFluxor(options => options
+				.ScanAssemblies(currentAssembly)
+				.UseReduxDevTools());
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
